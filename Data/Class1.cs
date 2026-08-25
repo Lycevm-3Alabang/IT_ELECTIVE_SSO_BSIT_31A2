@@ -1,8 +1,9 @@
-﻿using Models;
+﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Models;
 
 namespace Data;
 
-public class DbContext
+public class ApplicationDbContext: IdentityDbContext
 {
   
 }
