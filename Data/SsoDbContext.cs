@@ -1,7 +1,6 @@
 ﻿using ITElectiveSSO.Models;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using System.Text.RegularExpressions;
 
 namespace ITELECTIVE_SSO.Data
 
@@ -101,44 +100,6 @@ namespace ITELECTIVE_SSO.Data
 
                  .OnDelete(DeleteBehavior.SetNull);
 
-            });
-
-            {
-                e.Property(t => t.Name).IsRequired();
-                e.Property(t => t.ReturnUrl).IsRequired();
-            });
-
-            builder.Entity<Group>(e =>
-            {
-                e.HasOne(g => g.TenantApp)
-                 .WithMany(t => t.Groups)
-                 .HasForeignKey(g => g.TenantAppId)
-                 .OnDelete(DeleteBehavior.Cascade);
-
-                e.HasIndex(g => new { g.TenantAppId, g.Name }).IsUnique();
-            });
-
-            builder.Entity<UserGroup>(e =>
-            {
-                e.HasKey(ug => new { ug.UserId, ug.GroupId });
-
-                e.HasOne(ug => ug.User)
-                 .WithMany(u => u.UserGroups)
-                 .HasForeignKey(ug => ug.UserId)
-                 .OnDelete(DeleteBehavior.Cascade);
-
-                e.HasOne(ug => ug.Group)
-                 .WithMany(g => g.UserGroups)
-                 .HasForeignKey(ug => ug.GroupId)
-                 .OnDelete(DeleteBehavior.Cascade);
-            });
-
-            builder.Entity<AuditLog>(e =>
-            {
-                e.HasOne(a => a.User)
-                 .WithMany()
-                 .HasForeignKey(a => a.UserId)
-                 .OnDelete(DeleteBehavior.SetNull);
             });
         }
 
