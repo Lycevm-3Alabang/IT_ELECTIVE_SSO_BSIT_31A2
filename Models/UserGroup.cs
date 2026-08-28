@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.RegularExpressions;
 
 namespace ITElectiveSSO.Models
-{]
+{
     public class UserGroup
     {
         /// <summary>
@@ -29,6 +29,6 @@ namespace ITElectiveSSO.Models
         /// navigation property to the associated group
         /// </summary>
         [ForeignKey(nameof(GroupId))]
-        public virtual Group Group { get; set; } = null!;
+        public Group Group { get; set; } = null!;
     }
 }
