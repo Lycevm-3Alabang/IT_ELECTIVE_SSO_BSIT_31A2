@@ -24,6 +24,13 @@ namespace ITELECTIVE_SSO.Data
 
             base.OnModelCreating(builder);
 
+            builder.Entity<ApplicationUser>(e =>
+            {
+                e.HasIndex(u => u.NormalizedEmail)
+                 .HasDatabaseName("EmailIndex")
+                 .IsUnique();
+            });
+
             builder.Entity<TenantApp>(e =>
 
             {
