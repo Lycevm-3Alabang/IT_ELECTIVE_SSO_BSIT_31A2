@@ -17,7 +17,7 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 {
     options.User.RequireUniqueEmail = true;
 
-    // Adjust password rules as needed for your assignment
+    // Password rules configuration
     options.Password.RequireDigit = true;
     options.Password.RequireLowercase = true;
     options.Password.RequireUppercase = false;
@@ -30,12 +30,12 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 .AddEntityFrameworkStores<SsoDbContext>()
 .AddDefaultTokenProviders();
 
-// --- Cookie settings (used for Identity's own sign-in scheme) ---
+// --- Cookie Settings (Identity Sign-In Scheme) ---
 builder.Services.ConfigureApplicationCookie(options =>
 {
     options.LoginPath = "/Auth/Login";
     options.AccessDeniedPath = "/Auth/AccessDenied";
-    options.ExpireTimeSpan = TimeSpan.FromHours(9); // matches your 9-hour token lifetime decision
+    options.ExpireTimeSpan = TimeSpan.FromHours(9);
     options.SlidingExpiration = true;
 });
 
@@ -45,22 +45,20 @@ var app = builder.Build();
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
 
 app.UseHttpsRedirection();
+app.UseStaticFiles();
+
 app.UseRouting();
 
 // IMPORTANT: Authentication must come before Authorization
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.MapStaticAssets();
-
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}")
-    .WithStaticAssets();
+    pattern: "{controller=Admin}/{action=Index}/{id?}");
 
 app.Run();
