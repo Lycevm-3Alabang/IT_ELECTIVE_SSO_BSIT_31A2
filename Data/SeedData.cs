@@ -39,6 +39,7 @@ namespace ITELECTIVE_SSO.Data
                 UserName = adminEmail,
                 Email = adminEmail,
                 EmailConfirmed = true,
+                IsActive = true,
                 CreatedAt = DateTime.UtcNow
             };
 
