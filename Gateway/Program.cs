@@ -63,4 +63,9 @@ app.MapControllerRoute(
     pattern: "{controller=Home}/{action=Index}/{id?}")
     .WithStaticAssets();
 
+using (var scope = app.Services.CreateScope())
+{
+    await SeedData.SeedAdminAsync(scope.ServiceProvider, app.Configuration);
+}
+
 app.Run();
