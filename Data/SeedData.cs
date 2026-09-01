@@ -34,8 +34,20 @@ namespace ITELECTIVE_SSO.Data
             {
                 return;
             }
-            // TODO (P4): create admin via UserManager
-            // TODO (P5): ensure IsActive = true
+            var adminUser = new ApplicationUser
+            {
+                UserName = adminEmail,
+                Email = adminEmail,
+                EmailConfirmed = true,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            var result = await userManager.CreateAsync(adminUser, adminPassword);
+            if (!result.Succeeded)
+            {
+                var errors = string.Join("; ", result.Errors.Select(e => e.Description));
+                throw new InvalidOperationException($"Failed to seed admin user: {errors}");
+            }
         }
     }
 }
