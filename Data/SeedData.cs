@@ -28,7 +28,12 @@ namespace ITELECTIVE_SSO.Data
             string adminEmail,
             string adminPassword)
         {
-            // TODO (P3): idempotent check
+            var existingAdmin = await userManager.FindByEmailAsync(adminEmail);
+
+            if (existingAdmin != null)
+            {
+                return;
+            }
             // TODO (P4): create admin via UserManager
             // TODO (P5): ensure IsActive = true
         }
