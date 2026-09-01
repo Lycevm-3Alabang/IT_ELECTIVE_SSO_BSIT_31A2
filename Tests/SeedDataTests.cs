@@ -46,7 +46,19 @@ namespace Tests
             Assert.True(admin!.IsActive);
         }
 
-        //P8
+        [Fact]
+        public async Task SeedAdminAsync_SkipsSeeding_WhenAdminAlreadyExists()
+        {
+            var userManager = BuildUserManager(Guid.NewGuid().ToString());
 
+            await SeedData.SeedAdminAsync(userManager, "admin@itelectivesso.local", "Admin123");
+            var countAfterFirstSeed = await userManager.Users.CountAsync();
+
+            await SeedData.SeedAdminAsync(userManager, "admin@itelectivesso.local", "Admin123");
+            var countAfterSecondSeed = await userManager.Users.CountAsync();
+
+            Assert.Equal(1, countAfterFirstSeed);
+            Assert.Equal(countAfterFirstSeed, countAfterSecondSeed);
+        }
     }
 }
