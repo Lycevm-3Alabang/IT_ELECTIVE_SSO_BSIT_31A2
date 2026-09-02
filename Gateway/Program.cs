@@ -61,4 +61,9 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Admin}/{action=Index}/{id?}");
 
+using (var scope = app.Services.CreateScope())
+{
+    await SeedData.SeedAdminAsync(scope.ServiceProvider, app.Configuration);
+}
+
 app.Run();
