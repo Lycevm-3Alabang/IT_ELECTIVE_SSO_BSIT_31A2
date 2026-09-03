@@ -41,6 +41,12 @@ namespace Gateway.Areas.Admin.Controllers
             return View(users);
         }
 
-        // ADD OTHER ACTIONS HERE (P3-P6)
+        // GET: /Admin/Users/Create
+        public IActionResult Create()
+        {
+            return View();
+        }
+
+        // ADD OTHER ACTIONS HERE (P4-P6)
     }
 }
