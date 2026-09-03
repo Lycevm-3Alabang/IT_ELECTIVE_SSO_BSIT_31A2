@@ -20,6 +20,27 @@ namespace Gateway.Areas.Admin.Controllers
             _context = context;
         }
 
-        // ADD OTHER ACTIONS HERE (P2-P6)
+        // GET: /Admin/Users
+        public async Task<IActionResult> Index(int page = 1)
+        {
+            const int pageSize = 10;
+
+            var query = _userManager.Users.OrderBy(u => u.Email);
+
+            var totalUsers = await query.CountAsync();
+            var totalPages = (int)Math.Ceiling(totalUsers / (double)pageSize);
+
+            var users = await query
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            ViewBag.CurrentPage = page;
+            ViewBag.TotalPages = totalPages;
+
+            return View(users);
+        }
+
+        // ADD OTHER ACTIONS HERE (P3-P6)
     }
 }
