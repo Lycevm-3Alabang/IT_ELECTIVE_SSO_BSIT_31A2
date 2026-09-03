@@ -81,6 +81,23 @@ namespace Gateway.Areas.Admin.Controllers
             return View();
         }
 
-        // ADD OTHER ACTIONS HERE (P4-P6)
+        // Part ni Leano
+
+        // POST: /Admin/Users/Delete/{id}
+        [HttpPost]
+        public async Task<IActionResult> Delete(string id)
+        {
+            var user = await _userManager.FindByIdAsync(id);
+
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            user.IsActive = false;
+            await _userManager.UpdateAsync(user);
+
+            return RedirectToAction(nameof(Index));
+        }
     }
 }
