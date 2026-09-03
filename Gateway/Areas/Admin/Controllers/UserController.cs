@@ -47,6 +47,40 @@ namespace Gateway.Areas.Admin.Controllers
             return View();
         }
 
+        // POST: /Admin/Users/Create
+        [HttpPost]
+        public async Task<IActionResult> Create(
+            string Email,
+            string Password,
+            string ConfirmPassword)
+        {
+            // P7
+
+            // P6
+
+            var user = new ApplicationUser
+            {
+                UserName = Email,
+                Email = Email,
+                IsActive = true,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            var result = await _userManager.CreateAsync(user, Password);
+
+            if (result.Succeeded)
+            {
+                return RedirectToAction(nameof(Index));
+            }
+
+            foreach (var error in result.Errors)
+            {
+                ModelState.AddModelError("", error.Description);
+            }
+
+            return View();
+        }
+
         // ADD OTHER ACTIONS HERE (P4-P6)
     }
 }
