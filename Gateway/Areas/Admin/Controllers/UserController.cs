@@ -81,7 +81,23 @@ namespace Gateway.Areas.Admin.Controllers
             return View();
         }
 
-        // Part ni Leano
+        // GET: /Admin/Users/Details/{id}
+        public async Task<IActionResult> Details(string id)
+        {
+            if (string.IsNullOrEmpty(id))
+            {
+                return NotFound();
+            }
+
+            var user = await _userManager.FindByIdAsync(id);
+
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            return View(user);
+        }
 
         // POST: /Admin/Users/Delete/{id}
         [HttpPost]
