@@ -60,7 +60,13 @@ namespace Gateway.Areas.Admin.Controllers
                 return View();
             }
 
-            // P6
+            var existingUser = await _userManager.FindByEmailAsync(Email);
+
+            if (existingUser != null)
+            {
+                ModelState.AddModelError("", "Email already exists.");
+                return View();
+            }
 
             var user = new ApplicationUser
             {
