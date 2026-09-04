@@ -54,7 +54,11 @@ namespace Gateway.Areas.Admin.Controllers
             string Password,
             string ConfirmPassword)
         {
-            // P7
+            if (Password != ConfirmPassword)
+            {
+                ModelState.AddModelError("", "Passwords do not match.");
+                return View();
+            }
 
             // P6
 
