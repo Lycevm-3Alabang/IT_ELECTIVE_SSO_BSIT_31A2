@@ -57,5 +57,37 @@ namespace Tests
             Assert.Equal("newuser@example.com", createdUser.Email);
             Assert.True(createdUser.IsActive);
         }
+
+
+        [Fact]
+        public async Task CreateUser_WithDuplicateEmail_FailsCreation()
+        {
+            // arranges
+            var userManager = BuildUserManager(Guid.NewGuid().ToString());
+            var firstUser = new ApplicationUser
+            {
+                UserName = "duplicate@example.com",
+                Email = "duplicate@example.com",
+                IsActive = true
+            };
+            var secondUser = new ApplicationUser
+            {
+                UserName = "duplicate2@example.com",
+                Email = "duplicate@example.com",
+                IsActive = true
+            };
+
+            // acts
+            var firstResult = await userManager.CreateAsync(firstUser, "Password123");
+            var secondResult = await userManager.CreateAsync(secondUser, "Password123");
+            var totalUsersWithEmail = await userManager.Users
+                .Where(u => u.Email == "duplicate@example.com")
+                .CountAsync();
+
+            // asserts
+            Assert.True(firstResult.Succeeded);
+            Assert.False(secondResult.Succeeded);
+            Assert.Equal(1, totalUsersWithEmail);
+        }
     }
 }
