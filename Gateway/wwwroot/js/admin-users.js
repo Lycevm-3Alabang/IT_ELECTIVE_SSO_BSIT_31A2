@@ -1,4 +1,18 @@
-﻿// [MANZANO] Active Toggle Switch Handler
+﻿// [BUENO] Search / Filter Table by Email
+function filterUsersByEmail() {
+    let input = document.getElementById('emailSearchInput').value.toLowerCase();
+    let rows = document.querySelectorAll('#usersTable tbody tr');
+
+    rows.forEach(row => {
+        let emailCell = row.querySelector('.user-email');
+        if (emailCell) {
+            let emailText = emailCell.textContent.toLowerCase();
+            row.style.display = emailText.includes(input) ? '' : 'none';
+        }
+    });
+}
+
+// [MANZANO] Active Toggle Switch Handler
 function toggleUserStatus(userId, switchElement) {
     let row = switchElement.closest('tr');
     let badge = row.querySelector('.status-badge');
