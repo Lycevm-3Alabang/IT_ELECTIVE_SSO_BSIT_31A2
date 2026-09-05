@@ -1,0 +1,22 @@
+﻿<div class="modal fade" id="deleteUserModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content modal-dark-content shadow-lg">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold text-white d-flex align-items-center">
+                    <span class="bg-danger text-white rounded-circle d-inline-flex justify-content-center align-items-center me-2" style="width:24px; height:24px; font-size:14px;">!</span> Confirm Deletion
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-0 text-light">
+                    Are you sure you want to delete <strong id="deleteTargetEmail" data-testid="delete-target-email">this user</strong>?<br>
+                    <span class="text-secondary small">This action will suspend the account.</span>
+                </p>
+            </div>
+            <div class="modal-footer border-0 pt-0">
+                <button type="button" class="btn btn-modal-cancel px-3" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-delete-red px-3" onclick="confirmDeleteUser()" data-testid="confirm-delete-btn">Delete</button>
+            </div>
+        </div>
+    </div>
+</div>
