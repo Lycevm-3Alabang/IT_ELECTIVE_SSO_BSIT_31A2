@@ -35,3 +35,27 @@ function loadUserDetails(email, status, groups, lastLogin) {
     document.getElementById('detailGroups').textContent = groups;
     document.getElementById('detailLastLogin').textContent = lastLogin;
 }
+
+// [MANZANO] Form Submit & Inline Validation Errors
+function handleCreateUserSubmit(e) {
+    e.preventDefault();
+
+    let passwordInput = document.getElementById('createPassword');
+    let confirmInput = document.getElementById('createConfirmPassword');
+    let errorDiv = document.getElementById('confirmPasswordError');
+
+    if (passwordInput.value !== confirmInput.value) {
+        confirmInput.classList.add('modal-dark-input-error');
+        errorDiv.classList.remove('d-none');
+        return;
+    } else {
+        confirmInput.classList.remove('modal-dark-input-error');
+        errorDiv.classList.add('d-none');
+    }
+
+    let createModalEl = document.getElementById('createUserModal');
+    let modalInstance = bootstrap.Modal.getInstance(createModalEl);
+    if (modalInstance) modalInstance.hide();
+
+    document.getElementById('createUserForm').reset();
+}
