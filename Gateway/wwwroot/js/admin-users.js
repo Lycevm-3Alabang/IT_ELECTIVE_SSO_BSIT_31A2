@@ -50,6 +50,32 @@ function loadUserDetails(email, status, groups, lastLogin) {
     document.getElementById('detailLastLogin').textContent = lastLogin;
 }
 
+// [FACTOR] Delete Confirmation Setup
+let targetDeleteUserId = null;
+
+function setDeleteUserTarget(userId, email) {
+    targetDeleteUserId = userId;
+    document.getElementById('deleteTargetEmail').textContent = email;
+}
+
+function confirmDeleteUser() {
+    if (targetDeleteUserId) {
+        let row = document.querySelector(`tr[data-user-id='${targetDeleteUserId}']`);
+        if (row) {
+            let toggle = row.querySelector('.user-toggle-switch');
+            if (toggle) {
+                toggle.checked = false;
+                toggleUserStatus(targetDeleteUserId, toggle);
+            }
+        }
+    }
+
+    let deleteModalEl = document.getElementById('deleteUserModal');
+    let modalInstance = bootstrap.Modal.getInstance(deleteModalEl);
+    if (modalInstance) modalInstance.hide();
+}
+
+
 // [MANZANO] Form Submit & Inline Validation Errors
 function handleCreateUserSubmit(e) {
     e.preventDefault();
