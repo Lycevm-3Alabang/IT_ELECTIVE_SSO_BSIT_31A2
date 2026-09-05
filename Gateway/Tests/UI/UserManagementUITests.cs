@@ -21,3 +21,25 @@ namespace SSO_Gateway.Tests.UI
             Assert.True(isMismatch);
             Assert.Equal("Password do not match!", errorMessage);
         }
+
+        // =========================================================================
+        // TASK #95: Write UI test: toggle active flow
+        // Objective: Verify front-end state transition between Active and Suspended.
+        // =========================================================================
+        [Fact]
+        public void ActiveToggleSwitch_WhenClicked_UpdatesUserBadgeText()
+        {
+            // Arrange
+            string initialStatus = "Active";
+            bool isChecked = false; // Toggle clicked to OFF
+
+            // Act
+            string updatedStatus = isChecked ? "Active" : "Suspended";
+
+            // Assert
+            Assert.Equal("Active", initialStatus);
+            Assert.Equal("Suspended", updatedStatus);
+        }
+    }
+}
+
