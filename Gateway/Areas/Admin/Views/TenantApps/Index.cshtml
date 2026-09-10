@@ -1,0 +1,38 @@
+﻿@model List<TenantApp>
+
+@{
+    ViewData["Title"] = "Tenant Apps";
+}
+
+<h1>Tenant Apps</h1>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+}
+
+<p><a asp-action="Create" class="btn btn-primary">Register New App</a></p>
+
+<table class="table">
+    <thead>
+        <tr><th>Name</th><th>Return URL</th><th>Status</th><th></th></tr>
+    </thead>
+    <tbody>
+        @foreach (var app in Model)
+        {
+            <tr>
+                <td>@app.Name</td>
+                <td>@app.ReturnUrl</td>
+                <td>@(app.IsActive ? "Active" : "Inactive")</td>
+                <td>
+                    <a asp-action="Edit" asp-route-id="@app.Id">Edit</a>
+                    <form asp-action="Delete" asp-route-id="@app.Id" method="post"
+                          style="display:inline"
+                          onsubmit="return confirm('Remove this app? This cannot be undone.');">
+                        <button type="submit" class="btn btn-link text-danger">Delete</button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
