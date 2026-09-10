@@ -112,5 +112,28 @@ namespace Tests
             Assert.NotNull(updatedUser);
             Assert.False(updatedUser.IsActive);
         }
+
+        [Fact]
+        public async Task ToggleActive_ChangesIsActiveFromFalseToTrue()
+        {
+            // arrange
+            var userManager = BuildUserManager(Guid.NewGuid().ToString());
+            var user = new ApplicationUser
+            {
+                UserName = "toggleuser2@example.com",
+                Email = "toggleuser2@example.com",
+                IsActive = false
+            };
+            await userManager.CreateAsync(user, "Password123");
+
+            // act
+            user.IsActive = !user.IsActive;
+            await userManager.UpdateAsync(user);
+            var updatedUser = await userManager.FindByEmailAsync("toggleuser2@example.com");
+
+            // assert
+            Assert.NotNull(updatedUser);
+            Assert.True(updatedUser.IsActive);
+        }
     }
 }
