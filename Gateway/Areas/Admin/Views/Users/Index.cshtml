@@ -175,7 +175,9 @@
                                     </span>
 
                                     <form asp-area="Admin" asp-controller="UserController" asp-action="ToggleActive" asp-route-id="@user.Id" method="post" class="d-inline">
+                                        @* Add Toggle Switch *@
                                         <div class="form-check form-switch d-inline-block align-middle mb-0">
+
                                             @* Flip IsActive Task *@
                                             <input class="form-check-input user-toggle-switch"
                                                    type="checkbox"
