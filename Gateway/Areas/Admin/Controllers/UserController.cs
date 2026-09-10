@@ -125,5 +125,29 @@ namespace Gateway.Areas.Admin.Controllers
 
             return RedirectToAction(nameof(Index));
         }
+
+        // POST: /Admin/Users/ToggleActive/{id}
+        [HttpPost]
+        public async Task<IActionResult> ToggleActive(string id)
+        {
+            var user = await _userManager.FindByIdAsync(id);
+
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            user.IsActive = !user.IsActive;
+            await _userManager.UpdateAsync(user);
+
+            bool isAjax = Request.Headers["X-Requested-With"] == "XMLHttpRequest";
+
+            if (isAjax)
+            {
+                return Json(new { success = true, isActive = user.IsActive });
+            }
+
+            return RedirectToAction(nameof(Index));
+        }
     }
 }
