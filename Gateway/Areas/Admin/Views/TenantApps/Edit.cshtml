@@ -1,0 +1,27 @@
+﻿@model TenantAppViewModel
+
+@{
+    ViewData["Title"] = "Edit App";
+}
+
+<h1>Edit App</h1>
+
+<form asp-action="Edit" asp-route-id="@Model.Id" method="post">
+    <input type="hidden" asp-for="Id" />
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+    <div class="form-group">
+        <label asp-for="Name"></label>
+        <input asp-for="Name" class="form-control" />
+        <span asp-validation-for="Name" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="ReturnUrl"></label>
+        <input asp-for="ReturnUrl" class="form-control" />
+        <span asp-validation-for="ReturnUrl" class="text-danger"></span>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Save</button>
+    <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+</form>

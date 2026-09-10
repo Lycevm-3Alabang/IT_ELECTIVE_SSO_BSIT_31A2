@@ -32,6 +32,40 @@ namespace Gateway.Areas.Admin.Controllers
             return View(new TenantAppViewModel());
         }
 
-        // TASKS 4-9
+        // POST /Admin/TenantApps/Create
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Create(TenantAppViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+            var nameExists = await _context.TenantApps
+                .AnyAsync(a => a.Name == model.Name);
+
+            if (nameExists)
+            {
+                ModelState.AddModelError(nameof(model.Name), "An app with this name already exists.");
+                return View(model);
+            }
+
+            var app = new TenantApp
+            {
+                Name = model.Name,
+                ReturnUrl = model.ReturnUrl,
+                IsActive = true,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            _context.TenantApps.Add(app);
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = $"App '{app.Name}' was registered successfully.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        // TASKS 5-9
     }
 }
