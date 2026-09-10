@@ -16,6 +16,16 @@ namespace Gateway.Areas.Admin.Controllers
             _context = context;
         }
 
-        // TASKS 2-9
+        // GET /Admin/TenantApps
+        public async Task<IActionResult> Index()
+        {
+            var apps = await _context.TenantApps
+                .OrderBy(a => a.Name)
+                .ToListAsync();
+
+            return View(apps);
+        }
+
+        // TASKS 3-9
     }
 }
