@@ -26,6 +26,12 @@ namespace Gateway.Areas.Admin.Controllers
             return View(apps);
         }
 
-        // TASKS 3-9
+        // GET /Admin/TenantApps/Create
+        public IActionResult Create()
+        {
+            return View(new TenantAppViewModel());
+        }
+
+        // TASKS 4-9
     }
 }
