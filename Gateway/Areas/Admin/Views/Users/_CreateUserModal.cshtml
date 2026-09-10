@@ -39,19 +39,22 @@
             </div>
             <form id="createUserForm" onsubmit="handleCreateUserSubmit(event)">
                 <div class="modal-body">
+                    <!-- Dynamic server error container -->
+                    <div id="createUserErrorAlert" class="alert alert-danger d-none py-2 small" role="alert"></div>
+
                     <div class="mb-3">
                         <label for="createEmail" class="form-label fw-semibold small text-light">Email Address</label>
-                        <input type="email" id="createEmail" class="form-control modal-dark-input" placeholder="user@gmail.com" required data-testid="input-email">
+                        <input type="email" id="createEmail" name="Email" class="form-control modal-dark-input" placeholder="user@gmail.com" required data-testid="input-email">
                     </div>
                     <div class="mb-3">
                         <label for="createPassword" class="form-label fw-semibold small text-light">Temporary Password</label>
-                        <input type="password" id="createPassword" class="form-control modal-dark-input" required minlength="6" data-testid="input-password">
+                        <input type="password" id="createPassword" name="Password" class="form-control modal-dark-input" required minlength="6" data-testid="input-password">
                     </div>
                     <div class="mb-3">
                         <label for="createConfirmPassword" class="form-label fw-semibold small text-light">Confirm Password</label>
-                        <input type="password" id="createConfirmPassword" class="form-control modal-dark-input" required data-testid="input-confirm-password">
+                        <input type="password" id="createConfirmPassword" name="ConfirmPassword" class="form-control modal-dark-input" required data-testid="input-confirm-password">
                         <div id="confirmPasswordError" class="text-danger small mt-2 d-none" data-testid="password-mismatch-error">
-                            Password do not match!
+                            Passwords do not match!
                         </div>
                     </div>
                 </div>
