@@ -66,6 +66,25 @@ namespace Gateway.Areas.Admin.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        // TASKS 5-9
+        // GET /Admin/TenantApps/Edit/{id}
+        public async Task<IActionResult> Edit(int id)
+        {
+            var app = await _context.TenantApps.FindAsync(id);
+            if (app == null)
+            {
+                return NotFound();
+            }
+
+            var model = new TenantAppViewModel
+            {
+                Id = app.Id,
+                Name = app.Name,
+                ReturnUrl = app.ReturnUrl
+            };
+
+            return View(model);
+        }
+
+        // TASKS 6-9
     }
 }
