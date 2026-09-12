@@ -13,7 +13,7 @@ namespace Gateway.Areas.Admin.Models
 
         [Required(ErrorMessage = "Return URL is required.")]
         [StringLength(500, ErrorMessage = "Return URL cannot exceed 500 characters.")]
-        [Url(ErrorMessage = "Enter a valid URL, e.g. https://example.com/callback")]
+        [Url(ErrorMessage = "Return URL must be a valid URL (e.g. https://example.com/callback).")]
         [Display(Name = "Return URL")]
         public string ReturnUrl { get; set; } = string.Empty;
     }
