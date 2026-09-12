@@ -57,5 +57,33 @@ namespace Tests
             Assert.True(savedApp.IsActive);
         }
 
+        [Fact]
+        public async Task Create_WithDuplicateAppName_RejectsAndDoesNotSaveSecondApp()
+        {
+            var context = BuildContext(Guid.NewGuid().ToString());
+            var controller = new TenantAppsController(context);
+            AttachTempData(controller);
+
+            var firstApp = new TenantAppViewModel
+            {
+                Name = "Library System",
+                ReturnUrl = "https://library.example.com/callback"
+            };
+            var duplicateApp = new TenantAppViewModel
+            {
+                Name = "Library System",
+                ReturnUrl = "https://library-mirror.example.com/callback"
+            };
+
+            await controller.Create(firstApp);
+            var secondResult = await controller.Create(duplicateApp);
+            var totalAppsWithName = await context.TenantApps
+                .Where(a => a.Name == "Library System")
+                .CountAsync();
+
+            Assert.IsType<ViewResult>(secondResult);
+            Assert.False(controller.ModelState.IsValid);
+            Assert.Equal(1, totalAppsWithName);
+        }
     }
 }
