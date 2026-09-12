@@ -86,5 +86,56 @@ namespace Gateway.Areas.Admin.Controllers
         }
 
         // TASKS 6-9
+
+        [HttpPost]
+
+        [ValidateAntiForgeryToken]
+
+        public async Task<IActionResult> Edit(int id, TenantAppViewModel model)
+
+        {
+
+            if (id != model.Id)
+
+            {
+
+                return NotFound();
+
+            }
+
+            if (!ModelState.IsValid)
+
+            {
+
+                return View(model);
+
+            }
+
+            // TASK 8
+
+            var app = await _context.TenantApps.FindAsync(id);
+
+            if (app == null)
+
+            {
+
+                return NotFound();
+
+            }
+
+            app.Name = model.Name;
+
+            app.ReturnUrl = model.ReturnUrl;
+
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = $"App '{app.Name}' was updated successfully.";
+
+            return RedirectToAction(nameof(Index));
+
+        }
+
+        // TASK 7 
+
     }
 }
