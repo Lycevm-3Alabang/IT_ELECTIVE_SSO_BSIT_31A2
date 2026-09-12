@@ -43,7 +43,7 @@ namespace Gateway.Areas.Admin.Controllers
             }
 
             var nameExists = await _context.TenantApps
-                .AnyAsync(a => a.Name == model.Name);
+               .AnyAsync(a => a.Name == model.Name);
 
             if (nameExists)
             {
@@ -51,6 +51,7 @@ namespace Gateway.Areas.Admin.Controllers
                 return View(model);
             }
 
+            
             var app = new TenantApp
             {
                 Name = model.Name,
@@ -111,7 +112,14 @@ namespace Gateway.Areas.Admin.Controllers
 
             }
 
-            // TASK 8
+            var nameExists = await _context.TenantApps
+                .AnyAsync(a => a.Name == model.Name && a.Id != id);
+
+            if (nameExists)
+            {
+                ModelState.AddModelError(nameof(model.Name), "An app with this name already exists.");
+                return View(model);
+            }
 
             var app = await _context.TenantApps.FindAsync(id);
 
