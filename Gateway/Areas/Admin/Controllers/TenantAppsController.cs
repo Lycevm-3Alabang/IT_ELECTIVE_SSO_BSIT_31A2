@@ -135,7 +135,23 @@ namespace Gateway.Areas.Admin.Controllers
 
         }
 
-        // TASK 7 
+        // POST /Admin/TenantApps/Delete/{id}
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Delete(int id)
+        {
+            var app = await _context.TenantApps.FindAsync(id);
+            if (app == null)
+            {
+                return NotFound();
+            }
+
+            _context.TenantApps.Remove(app);
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = $"App '{app.Name}' was removed.";
+            return RedirectToAction(nameof(Index));
+        }
 
     }
 }
