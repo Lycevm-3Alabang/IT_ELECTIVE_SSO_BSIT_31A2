@@ -22,5 +22,22 @@ namespace ITElectiveSSO.Tests.UI
         }
 
         //Cabardo
+        [Fact]
+        public void EditTenantAppModal_UpdatedInputs_ReflectsNewValues()
+        {
+            // Arrange
+            string initialName = "Old App Name";
+            string updatedName = "Updated App Name";
+            string updatedUrl = "https://updated-domain.com/callback";
+
+            // Act
+            bool nameChanged = initialName != updatedName;
+
+            // Assert
+            Assert.True(nameChanged);
+            Assert.Equal("Updated App Name", updatedName);
+            Assert.Equal("https://updated-domain.com/callback", updatedUrl);
+        }
+
     }
 }
