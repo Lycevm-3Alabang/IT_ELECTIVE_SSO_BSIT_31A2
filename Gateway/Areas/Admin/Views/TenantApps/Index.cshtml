@@ -277,4 +277,33 @@
 </div>
 
 @*VILLAMOR*@
-@*code here*@
+<script>
+    function handleToggle(appId, checkbox) {
+        const isChecked = checkbox.checked;
+        const label = document.getElementById(`toggleLabel-${appId}`);
+        const badge = document.getElementById(`badge-${appId}`);
+
+        // Immediately update UI visually without page refresh
+        if (isChecked) {
+            label.textContent = "ON";
+            label.className = "me-2 fw-bold small text-light";
+            badge.textContent = "Active";
+            badge.className = "badge badge-active-green";
+        } else {
+            label.textContent = "OFF";
+            label.className = "me-2 fw-bold small text-secondary";
+            badge.textContent = "Suspended";
+            badge.className = "badge badge-suspended-gray";
+        }
+
+        // Send background call to update status in DB
+        fetch(`/Admin/TenantApps/ToggleActive/${appId}`, {
+            method: 'POST',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        }).catch(err => {
+            console.log("Status updated visually.");
+        });
+    }
+</script>
