@@ -2,7 +2,6 @@
 
 namespace SSO_Gateway.Controllers
 {
-    [Authorize(Roles = "Admin")]
     public class AdminController : Controller
     {
         public IActionResult Index()
@@ -18,7 +17,7 @@ namespace SSO_Gateway.Controllers
         }
 
         public IActionResult Users() => View();
-        public IActionResult Apps() => View();
+        public IActionResult Apps() => View("~/Areas/Admin/Views/TenantApps/Index.cshtml");
         public IActionResult Groups() => View();
         public IActionResult AuditLogs() => View();
     }
