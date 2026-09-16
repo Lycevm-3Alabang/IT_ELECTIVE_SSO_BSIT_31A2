@@ -20,7 +20,9 @@ namespace Gateway.Services
                 return null;
             }
 
-            // TODO (Task 3): match against TenantApps.ReturnUrl
+            var app = await _context.TenantApps
+                .FirstOrDefaultAsync(a => a.ReturnUrl == returnUrl && a.IsActive);
+
             // TODO (Task 7): log invalid attempts to AuditLogs
             // TODO (Task 4): return app or null
         }
