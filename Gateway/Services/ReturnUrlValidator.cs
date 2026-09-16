@@ -24,7 +24,7 @@ namespace Gateway.Services
                 .FirstOrDefaultAsync(a => a.ReturnUrl == returnUrl && a.IsActive);
 
             // TODO (Task 7): log invalid attempts to AuditLogs
-            // TODO (Task 4): return app or null
+            return app;
         }
     }
 }
