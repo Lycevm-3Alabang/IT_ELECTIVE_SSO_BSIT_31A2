@@ -23,7 +23,20 @@ namespace Gateway.Services
             var app = await _context.TenantApps
                 .FirstOrDefaultAsync(a => a.ReturnUrl == returnUrl && a.IsActive);
 
-            // TODO (Task 7): log invalid attempts to AuditLogs
+            if (app == null)
+            {
+                _context.AuditLogs.Add(new AuditLog
+                {
+                    UserId = null,
+                    Action = "InvalidReturnUrl",
+                    Details = $"Rejected unapproved return URL: {returnUrl}",
+                    IpAddress = ipAddress ?? "unknown",
+                    Timestamp = DateTime.UtcNow
+                });
+
+                await _context.SaveChangesAsync();
+            }
+
             return app;
         }
     }
