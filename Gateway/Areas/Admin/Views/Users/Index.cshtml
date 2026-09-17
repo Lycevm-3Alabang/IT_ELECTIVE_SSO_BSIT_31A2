@@ -221,6 +221,39 @@
                 </tbody>
             </table>
         </div>
+
+        <!-- Table Pagination Controls -->
+<div class="d-flex align-items-center justify-content-start pt-3 px-2 border-top border-secondary border-opacity-25" id="paginationContainer">
+    @if (ViewBag.CurrentPage > 1)
+    {
+        <a asp-area="Admin" asp-controller="Users" asp-action="Index" asp-route-page="@(ViewBag.CurrentPage - 1)" class="btn btn-sm btn-outline-light me-2">
+            &laquo; Previous
+        </a>
+    }
+    else
+    {
+        <button type="button" class="btn btn-sm btn-outline-light me-2" disabled>
+            &laquo; Previous
+        </button>
+    }
+
+    <span class="text-light small me-2">
+        Page @ViewBag.CurrentPage of @(ViewBag.TotalPages == 0 ? 1 : ViewBag.TotalPages)
+    </span>
+
+    @if (ViewBag.CurrentPage < ViewBag.TotalPages)
+    {
+        <a asp-area="Admin" asp-controller="Users" asp-action="Index" asp-route-page="@(ViewBag.CurrentPage + 1)" class="btn btn-sm btn-outline-light">
+            Next &raquo;
+        </a>
+    }
+    else
+    {
+        <button type="button" class="btn btn-sm btn-outline-light" disabled>
+            Next &raquo;
+        </button>
+    }
+</div>
     </div>
 </div>
 
