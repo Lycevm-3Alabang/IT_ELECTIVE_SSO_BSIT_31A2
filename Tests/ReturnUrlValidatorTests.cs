@@ -38,7 +38,16 @@ namespace Tests
             Assert.Equal("SalesApp", result!.Name);
         }
 
-        // TASK 9 Write test: invalid URL returns null
+        [Fact]
+        public async Task ValidateAsync_ReturnsNull_WhenUrlIsNotRegistered()
+        {
+            var context = BuildContext(Guid.NewGuid().ToString());
+            var validator = new ReturnUrlValidator(context);
+
+            var result = await validator.ValidateAsync("https://not-registered.example.com/callback");
+
+            Assert.Null(result);
+        }
 
         // TASK 10 Write test: unapproved URL logged
     }
