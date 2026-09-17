@@ -49,6 +49,20 @@ namespace Tests
             Assert.Null(result);
         }
 
-        // TASK 10 Write test: unapproved URL logged
+        [Fact]
+        public async Task ValidateAsync_LogsAuditEntry_WhenUrlIsNotRegistered()
+        {
+            var context = BuildContext(Guid.NewGuid().ToString());
+            var validator = new ReturnUrlValidator(context);
+
+            await validator.ValidateAsync("https://not-registered.example.com/callback", "127.0.0.1");
+
+            var logEntry = await context.AuditLogs
+                .SingleOrDefaultAsync(a => a.Action == "InvalidReturnUrl");
+
+            Assert.NotNull(logEntry);
+            Assert.Contains("not-registered.example.com", logEntry!.Details);
+            Assert.Equal("127.0.0.1", logEntry.IpAddress);
+        }
     }
 }
