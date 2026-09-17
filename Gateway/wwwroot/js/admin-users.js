@@ -18,6 +18,10 @@ async function toggleUserStatus(userId, checkbox) {
     const toggleLabel = row ? row.querySelector('.toggle-label') : null;
     const isActive = checkbox.checked;
 
+    // Get Anti-Forgery Token if available on the page
+    const tokenInput = document.querySelector('input[name="__RequestVerificationToken"]');
+    const token = tokenInput ? tokenInput.value : '';
+
     // Instantly update badge UI in table
     if (badge) {
         badge.innerText = isActive ? 'Active' : 'Suspended';
@@ -33,20 +37,43 @@ async function toggleUserStatus(userId, checkbox) {
     fetch(`/Admin/Users/ToggleActive/${userId}`, {
         method: 'POST',
         headers: {
-            'X-Requested-With': 'XMLHttpRequest'
+            'X-Requested-With': 'XMLHttpRequest',
+            'RequestVerificationToken': token
         }
     })
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
         .then(data => {
             if (!data.success) {
                 // Revert checkbox state on failure
                 checkbox.checked = !isActive;
+                if (badge) {
+                    badge.innerText = !isActive ? 'Active' : 'Suspended';
+                    badge.className = !isActive ? 'badge badge-active-green status-badge' : 'badge badge-suspended-gray status-badge';
+                }
+                if (toggleLabel) {
+                    toggleLabel.innerText = !isActive ? 'ON' : 'OFF';
+                    toggleLabel.className = `me-2 fw-bold small toggle-label ${!isActive ? 'text-light' : 'text-secondary'}`;
+                }
                 alert('Failed to update status.');
             }
         })
         .catch(err => {
             console.error('Error toggling status:', err);
+            // Revert checkbox state on error
             checkbox.checked = !isActive;
+            if (badge) {
+                badge.innerText = !isActive ? 'Active' : 'Suspended';
+                badge.className = !isActive ? 'badge badge-active-green status-badge' : 'badge badge-suspended-gray status-badge';
+            }
+            if (toggleLabel) {
+                toggleLabel.innerText = !isActive ? 'ON' : 'OFF';
+                toggleLabel.className = `me-2 fw-bold small toggle-label ${!isActive ? 'text-light' : 'text-secondary'}`;
+            }
         });
 }
 
@@ -114,26 +141,32 @@ async function confirmDeleteUser() {
 async function handleCreateUserSubmit(event) {
     event.preventDefault();
 
-    const email = document.getElementById('createEmail').value;
-    const password = document.getElementById('createPassword').value;
-    const confirmPassword = document.getElementById('createConfirmPassword').value;
-    const errorAlert = document.getElementById('createUserErrorAlert');
-    const mismatchError = document.getElementById('confirmPasswordError');
+    const emailInput = document.getElementById('createEmail');
+    const passwordInput = document.getElementById('createPassword');
+    const confirmPasswordInput = document.getElementById('createConfirmPassword');
+
+    const emailError = document.getElementById('emailError');
+    const passwordError = document.getElementById('passwordError');
+    const confirmPasswordError = document.getElementById('confirmPasswordError');
 
     // Reset error displays
-    if (errorAlert) errorAlert.classList.add('d-none');
-    if (mismatchError) mismatchError.classList.add('d-none');
+    if (emailError) { emailError.textContent = ''; emailError.classList.add('d-none'); }
+    if (passwordError) { passwordError.textContent = ''; passwordError.classList.add('d-none'); }
+    if (confirmPasswordError) { confirmPasswordError.classList.add('d-none'); }
 
-    // Client-side password validation
-    if (password !== confirmPassword) {
-        if (mismatchError) mismatchError.classList.remove('d-none');
+    // Client-side password mismatch validation
+    if (passwordInput.value !== confirmPasswordInput.value) {
+        if (confirmPasswordError) {
+            confirmPasswordError.textContent = "Passwords do not match!";
+            confirmPasswordError.classList.remove('d-none');
+        }
         return;
     }
 
     const formData = new FormData();
-    formData.append('Email', email);
-    formData.append('Password', password);
-    formData.append('ConfirmPassword', confirmPassword);
+    formData.append('Email', emailInput.value.trim());
+    formData.append('Password', passwordInput.value);
+    formData.append('ConfirmPassword', confirmPasswordInput.value);
 
     try {
         const response = await fetch('/Admin/Users/Create', {
@@ -144,13 +177,46 @@ async function handleCreateUserSubmit(event) {
             }
         });
 
-        if (response.ok) {
-            window.location.reload();
-        } else {
-            if (errorAlert) {
-                errorAlert.textContent = "Failed to create user. Ensure password meets complexity rules.";
-                errorAlert.classList.remove('d-none');
+        // If creation succeeded (controller redirected to Index)
+        if (response.redirected) {
+            window.location.href = response.url;
+            return;
+        }
+
+        const responseText = await response.text();
+
+        // Parse returned HTML from controller to extract ModelState validation errors
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(responseText, 'text/html');
+        const validationSummary = doc.querySelector('.validation-summary-errors, [data-valmsg-summary="true"]');
+
+        if (validationSummary && validationSummary.textContent.trim() !== '') {
+            const errorText = validationSummary.textContent.trim();
+
+            // Direct error to specific input based on message content
+            if (errorText.toLowerCase().includes('email')) {
+                if (emailError) {
+                    emailError.textContent = errorText;
+                    emailError.classList.remove('d-none');
+                }
+            } else if (errorText.toLowerCase().includes('password')) {
+                if (passwordError) {
+                    passwordError.textContent = errorText;
+                    passwordError.classList.remove('d-none');
+                }
+            } else {
+                if (emailError) {
+                    emailError.textContent = errorText;
+                    emailError.classList.remove('d-none');
+                }
             }
+        } else if (!response.ok) {
+            if (passwordError) {
+                passwordError.textContent = "Failed to create user. Ensure password meets complexity rules.";
+                passwordError.classList.remove('d-none');
+            }
+        } else {
+            window.location.reload();
         }
     } catch (err) {
         console.error("Error creating user:", err);
