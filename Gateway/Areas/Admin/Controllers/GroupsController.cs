@@ -96,7 +96,29 @@ namespace Gateway.Areas.Admin.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        // TASK 5
+        // GET /Admin/Groups/Edit/{id}
+        public async Task<IActionResult> Edit(int id)
+        {
+            var group = await _context.Groups
+                .Include(g => g.TenantApp)
+                .FirstOrDefaultAsync(g => g.Id == id);
+
+            if (group == null)
+            {
+                return NotFound();
+            }
+
+            var model = new GroupViewModel
+            {
+                Id = group.Id,
+                TenantAppId = group.TenantAppId,
+                Name = StripPrefix(group.Name, group.TenantApp.Name),
+                PowerLevel = group.PowerLevel,
+                TenantApps = await GetTenantAppOptions()
+            };
+
+            return View(model);
+        }
 
         // TASK 6
 
