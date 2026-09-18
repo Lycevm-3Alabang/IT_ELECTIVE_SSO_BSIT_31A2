@@ -17,7 +17,17 @@ namespace Gateway.Areas.Admin.Controllers
             _context = context;
         }
 
-        // TASK 2
+        // GET /Admin/Groups
+        public async Task<IActionResult> Index()
+        {
+            var groups = await _context.Groups
+                .Include(g => g.TenantApp)
+                .OrderBy(g => g.TenantApp.Name)
+                .ThenBy(g => g.PowerLevel)
+                .ToListAsync();
+
+            return View(groups);
+        }
 
         // TASK 3
 
