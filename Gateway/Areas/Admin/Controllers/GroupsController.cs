@@ -29,7 +29,16 @@ namespace Gateway.Areas.Admin.Controllers
             return View(groups);
         }
 
-        // TASK 3
+        // GET /Admin/Groups/Create
+        public async Task<IActionResult> Create()
+        {
+            var model = new GroupViewModel
+            {
+                TenantApps = await GetTenantAppOptions()
+            };
+
+            return View(model);
+        }
 
         // TASK 4 
 
