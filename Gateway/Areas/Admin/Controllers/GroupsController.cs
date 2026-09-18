@@ -40,6 +40,18 @@ namespace Gateway.Areas.Admin.Controllers
             return View(model);
         }
 
+        private async Task<List<SelectListItem>> GetTenantAppOptions()
+        {
+            return await _context.TenantApps
+                .OrderBy(a => a.Name)
+                .Select(a => new SelectListItem
+                {
+                    Value = a.Id.ToString(),
+                    Text = a.Name
+                })
+                .ToListAsync();
+        }
+
         // TASK 4 
 
         // TASK 5
@@ -48,6 +60,18 @@ namespace Gateway.Areas.Admin.Controllers
 
         // TASK 7
 
-        // TASK 9
+        private static string BuildPrefixedName(string appName, string groupName)
+        {
+            var baseName = StripPrefix(groupName, appName);
+            return $"{appName}-{baseName}";
+        }
+
+        private static string StripPrefix(string name, string appName)
+        {
+            var prefix = $"{appName}-";
+            return name.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)
+                ? name[prefix.Length..]
+                : name;
+        }
     }
 }
