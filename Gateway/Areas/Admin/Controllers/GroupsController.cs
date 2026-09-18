@@ -52,7 +52,49 @@ namespace Gateway.Areas.Admin.Controllers
                 .ToListAsync();
         }
 
-        // TASK 4 
+        // POST /Admin/Groups/Create
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Create(GroupViewModel model)
+        {
+            var tenantApp = await _context.TenantApps.FindAsync(model.TenantAppId);
+            if (tenantApp == null)
+            {
+                ModelState.AddModelError(nameof(model.TenantAppId), "Please select a valid app.");
+            }
+
+            if (!ModelState.IsValid)
+            {
+                model.TenantApps = await GetTenantAppOptions();
+                return View(model);
+            }
+
+            var prefixedName = BuildPrefixedName(tenantApp!.Name, model.Name);
+
+            var nameExists = await _context.Groups
+                .AnyAsync(g => g.TenantAppId == model.TenantAppId && g.Name == prefixedName);
+
+            if (nameExists)
+            {
+                ModelState.AddModelError(nameof(model.Name), "A group with this name already exists for this app.");
+                model.TenantApps = await GetTenantAppOptions();
+                return View(model);
+            }
+
+            var group = new Group
+            {
+                TenantAppId = model.TenantAppId,
+                Name = prefixedName,
+                PowerLevel = model.PowerLevel,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            _context.Groups.Add(group);
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = $"Group '{group.Name}' was created successfully.";
+            return RedirectToAction(nameof(Index));
+        }
 
         // TASK 5
 
