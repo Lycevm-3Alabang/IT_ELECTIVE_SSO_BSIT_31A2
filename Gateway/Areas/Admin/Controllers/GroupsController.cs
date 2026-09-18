@@ -120,7 +120,57 @@ namespace Gateway.Areas.Admin.Controllers
             return View(model);
         }
 
-        // TASK 6
+        // POST /Admin/Groups/Edit/{id}
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(int id, GroupViewModel model)
+        {
+            if (id != model.Id)
+            {
+                return NotFound();
+            }
+
+            var tenantApp = await _context.TenantApps.FindAsync(model.TenantAppId);
+            if (tenantApp == null)
+            {
+                ModelState.AddModelError(nameof(model.TenantAppId), "Please select a valid app.");
+            }
+
+            if (!ModelState.IsValid)
+            {
+                model.TenantApps = await GetTenantAppOptions();
+                return View(model);
+            }
+
+            var prefixedName = BuildPrefixedName(tenantApp!.Name, model.Name);
+
+            var nameExists = await _context.Groups
+                .AnyAsync(g => g.TenantAppId == model.TenantAppId
+                            && g.Name == prefixedName
+                            && g.Id != id);
+
+            if (nameExists)
+            {
+                ModelState.AddModelError(nameof(model.Name), "A group with this name already exists for this app.");
+                model.TenantApps = await GetTenantAppOptions();
+                return View(model);
+            }
+
+            var group = await _context.Groups.FindAsync(id);
+            if (group == null)
+            {
+                return NotFound();
+            }
+
+            group.TenantAppId = model.TenantAppId;
+            group.Name = prefixedName;
+            group.PowerLevel = model.PowerLevel;
+
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = $"Group '{group.Name}' was updated successfully.";
+            return RedirectToAction(nameof(Index));
+        }
 
         // TASK 7
 
