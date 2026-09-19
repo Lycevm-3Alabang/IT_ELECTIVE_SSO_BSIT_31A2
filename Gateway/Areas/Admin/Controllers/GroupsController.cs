@@ -172,7 +172,22 @@ namespace Gateway.Areas.Admin.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        // TASK 7
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Delete(int id)
+        {
+            var group = await _context.Groups.FindAsync(id);
+            if (group == null)
+            {
+                return NotFound();
+            }
+
+            _context.Groups.Remove(group);
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = $"Group '{group.Name}' was removed.";
+            return RedirectToAction(nameof(Index));
+        }
 
         private static string BuildPrefixedName(string appName, string groupName)
         {
