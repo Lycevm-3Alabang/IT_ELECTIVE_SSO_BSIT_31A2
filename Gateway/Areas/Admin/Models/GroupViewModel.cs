@@ -16,7 +16,10 @@ namespace Gateway.Areas.Admin.Models
         [Display(Name = "Group Name")]
         public string Name { get; set; } = string.Empty;
 
-        // TASK 8
+        [Required(ErrorMessage = "Power level is required.")]
+        [Range(0, 100, ErrorMessage = "Power level must be 0 (highest) or greater.")]
+        [Display(Name = "Power Level")]
+        public int PowerLevel { get; set; }
         public List<SelectListItem>? TenantApps { get; set; }
     }
 }
