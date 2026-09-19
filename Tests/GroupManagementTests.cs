@@ -78,7 +78,22 @@ namespace Tests
             Assert.Equal(1, totalGroups);
         }
 
-        // TASK 11
+        [Fact]
+        public async Task Create_WithNegativePowerLevel_FailsModelValidation()
+        {
+            var context = BuildContext(Guid.NewGuid().ToString());
+            var app = await SeedApp(context);
+            var controller = new GroupsController(context);
+            AttachTempData(controller);
+
+            var model = new GroupViewModel { TenantAppId = app.Id, Name = "Viewer", PowerLevel = -1 };
+            controller.ModelState.AddModelError("PowerLevel", "Power level must be 0 (highest) or greater.");
+
+            var result = await controller.Create(model);
+
+            Assert.IsType<ViewResult>(result);
+            Assert.False(controller.ModelState.IsValid);
+        }
 
     }
 }
