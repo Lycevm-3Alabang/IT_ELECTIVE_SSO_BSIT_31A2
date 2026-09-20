@@ -99,7 +99,27 @@ function loadUserDetails(buttonElement) {
 }
 
 // VILLAMOR i5
-// code here
+function triggerPasswordReset() {
+    const generatedPassword = "Test_" + Math.floor(100 + Math.random() * 900) + "!";
+
+    const passDisplay = document.getElementById('tempPasswordDisplay');
+    const passSection = document.getElementById('tempPasswordSection');
+
+    if (passDisplay) passDisplay.textContent = generatedPassword;
+    if (passSection) passSection.classList.remove('d-none');
+
+    const userDetailsModalEl = document.getElementById('userDetailsModal');
+    if (userDetailsModalEl) {
+        const userDetailsModal = bootstrap.Modal.getOrCreateInstance(userDetailsModalEl);
+        userDetailsModal.show();
+    }
+
+    const resetModalEl = document.getElementById('resetSuccessModal');
+    if (resetModalEl) {
+        const successModal = new bootstrap.Modal(resetModalEl);
+        successModal.show();
+    }
+}
 
 // FACTOR i5
 function copyTempPasswordToClipboard() {
