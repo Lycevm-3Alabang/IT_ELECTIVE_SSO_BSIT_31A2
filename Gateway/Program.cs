@@ -42,6 +42,8 @@ builder.Services.ConfigureApplicationCookie(options =>
 
 builder.Services.AddScoped<IReturnUrlValidator, Gateway.Services.ReturnUrlValidator>();
 
+builder.Services.AddScoped<IAuditService, Gateway.Services.AuditService>();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
