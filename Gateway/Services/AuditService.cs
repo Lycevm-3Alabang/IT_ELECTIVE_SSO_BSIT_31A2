@@ -1,6 +1,7 @@
 ﻿using ITElectiveSSO.Models;
 using ITELECTIVE_SSO.Data;
 using System.Threading.Tasks;
+using System;
 
 namespace Gateway.Services
 {
@@ -15,7 +16,18 @@ namespace Gateway.Services
 
         public async Task LogLoginAsync(string? userId, string email, bool success, string? reason = null, string? ipAddress = null)
         {
-            // TODO (Tasks 2 & 3): log successful and failed logins
+            var log = new AuditLog
+            {
+                UserId = userId,
+                Action = success ? "LoginSuccess",
+                Details = success
+                    ? $"User '{email}' logged in successfully.",
+                IpAddress = ipAddress ?? "unknown",
+                Timestamp = DateTime.UtcNow
+            };
+
+            _context.AuditLogs.Add(log);
+            await _context.SaveChangesAsync();
         }
 
         public async Task LogActionAsync(string? userId, string action, string details, string? ipAddress = null)
