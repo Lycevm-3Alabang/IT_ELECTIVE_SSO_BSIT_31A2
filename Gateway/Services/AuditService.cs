@@ -32,7 +32,17 @@ namespace Gateway.Services
 
         public async Task LogActionAsync(string? userId, string action, string details, string? ipAddress = null)
         {
-            // TODO (Task 4): log admin actions
+            var log = new AuditLog
+            {
+                UserId = userId,
+                Action = action,
+                Details = details,
+                IpAddress = ipAddress ?? "unknown",
+                Timestamp = DateTime.UtcNow
+            };
+
+            _context.AuditLogs.Add(log);
+            await _context.SaveChangesAsync();
         }
     }
 }
