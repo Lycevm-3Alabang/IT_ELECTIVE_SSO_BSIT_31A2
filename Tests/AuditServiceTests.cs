@@ -33,7 +33,20 @@ namespace Tests
             Assert.Contains("test@itelectivesso.local", log.Details);
         }
 
-        // TASK 8
+        [Fact]
+        public async Task LogActionAsync_CreatesAuditLog_OnAdminAction()
+        {
+            var context = BuildContext(Guid.NewGuid().ToString());
+            var service = new AuditService(context);
+
+            await service.LogActionAsync("admin-1", "ToggleActive", "Toggled user 'test@itelectivesso.local' to inactive.");
+
+            var log = await context.AuditLogs.SingleOrDefaultAsync(a => a.Action == "ToggleActive");
+
+            Assert.NotNull(log);
+            Assert.Equal("admin-1", log!.UserId);
+            Assert.Contains("test@itelectivesso.local", log.Details);
+        }
 
     }
 }
