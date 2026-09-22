@@ -22,7 +22,25 @@ namespace Gateway.Areas.Admin.Controllers
         {
             var query = _context.AuditLogs.AsQueryable();
 
-            // TODO (Task 6): date filtering + pagination
+            if (fromDate.HasValue)
+            {
+                query = query.Where(a => a.Timestamp >= fromDate.Value);
+            }
+
+            if (toDate.HasValue)
+            {
+                var inclusiveToDate = toDate.Value.Date.AddDays(1);
+                query = query.Where(a => a.Timestamp < inclusiveToDate);
+            }
+
+            query = query.OrderByDescending(a => a.Timestamp);
+
+            var logs = await PaginatedList<AuditLog>.CreateAsync(query, pageIndex, PageSize);
+
+            ViewData["FromDate"] = fromDate?.ToString("yyyy-MM-dd");
+            ViewData["ToDate"] = toDate?.ToString("yyyy-MM-dd");
+
+            return View(logs);
 
             return View(new PaginatedList<AuditLog>(new List<AuditLog>(), 0, 1, PageSize));
         }
