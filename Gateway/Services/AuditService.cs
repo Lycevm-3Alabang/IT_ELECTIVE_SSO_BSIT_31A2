@@ -19,9 +19,10 @@ namespace Gateway.Services
             var log = new AuditLog
             {
                 UserId = userId,
-                Action = success ? "LoginSuccess",
+                Action = success ? "LoginSuccess" : "LoginFailed",
                 Details = success
-                    ? $"User '{email}' logged in successfully.",
+                    ? $"User '{email}' logged in successfully."
+                    : $"Login failed for '{email}'. Reason: {reason ?? "Unknown"}",
                 IpAddress = ipAddress ?? "unknown",
                 Timestamp = DateTime.UtcNow
             };
