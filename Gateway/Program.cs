@@ -1,3 +1,4 @@
+using Gateway.Services;
 using ITELECTIVE_SSO.Data;
 using ITElectiveSSO.Models;
 using Microsoft.AspNetCore.Identity;
@@ -7,6 +8,12 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+
+// --- Antiforgery: allow the token to be sent via header (needed for our fetch/AJAX calls) ---
+builder.Services.AddAntiforgery(options =>
+{
+    options.HeaderName = "RequestVerificationToken";
+});
 
 // --- EF Core + SQLite ---
 builder.Services.AddDbContext<SsoDbContext>(options =>
@@ -29,7 +36,6 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 })
 .AddEntityFrameworkStores<SsoDbContext>()
 .AddDefaultTokenProviders();
-
 // --- Cookie Settings (Identity Sign-In Scheme) ---
 builder.Services.ConfigureApplicationCookie(options =>
 {
@@ -38,6 +44,10 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.ExpireTimeSpan = TimeSpan.FromHours(9);
     options.SlidingExpiration = true;
 });
+
+builder.Services.AddScoped<IReturnUrlValidator, Gateway.Services.ReturnUrlValidator>();
+
+builder.Services.AddScoped<IAuditService, Gateway.Services.AuditService>();
 
 var app = builder.Build();
 
@@ -56,6 +66,10 @@ app.UseRouting();
 // IMPORTANT: Authentication must come before Authorization
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.MapControllerRoute(
+    name: "areas",
+    pattern: "{area:exists}/{controller=Home}/{action=Index}/{id?}");
 
 app.MapControllerRoute(
     name: "default",

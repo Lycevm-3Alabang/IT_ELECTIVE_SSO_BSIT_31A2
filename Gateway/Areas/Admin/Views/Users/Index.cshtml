@@ -74,7 +74,14 @@
         border-radius: 5px;
         font-size: 0.85rem;
         font-weight: 600;
+        text-decoration: none;
+        display: inline-block;
     }
+
+        .btn-view-blue:hover {
+            background-color: #0077b5;
+            color: #ffffff;
+        }
 
     .btn-delete-red {
         background-color: #e55353;
@@ -174,14 +181,11 @@
                                         @(user.IsActive ? "ON" : "OFF")
                                     </span>
 
-                                    <form asp-area="Admin" asp-controller="UserController" asp-action="ToggleActive" asp-route-id="@user.Id" method="post" class="d-inline">
-                                        @* Add Toggle Switch *@
+                                    <form asp-area="Admin" asp-controller="Users" asp-action="ToggleActive" asp-route-id="@user.Id" method="post" class="d-inline">
                                         <div class="form-check form-switch d-inline-block align-middle mb-0">
-
-                                            @* Flip IsActive Task *@
                                             <input class="form-check-input user-toggle-switch"
                                                    type="checkbox"
-                                                   @(user.IsActive ? "checked" : "")
+                                            @(user.IsActive ? "checked" : "")
                                                    id="toggle_@user.Id"
                                                    onchange="toggleUserStatus('@user.Id', this)"
                                                    data-testid="toggle-user-@user.Id"
@@ -190,16 +194,12 @@
                                     </form>
                                 </td>
                                 <td class="text-end pe-2">
-                                    <button class="btn btn-view-blue me-2"
-                                            data-bs-toggle="modal"
-                                            data-bs-target="#userDetailsModal"
-                                            data-email="@user.Email"
-                                            data-active="@user.IsActive.ToString().ToLower()"
-                                            data-created="@user.CreatedAt.ToString("yyyy-MM-dd HH:mm")"
-                                            onclick="loadUserDetails(this)"
-                                            data-testid="view-user-@user.Id">
+                                    <!-- Points to /Admin/Users/Details/{id} -->
+                                    <a asp-area="Admin" asp-controller="Users" asp-action="Details" asp-route-id="@user.Id"
+                                       class="btn btn-view-blue me-2"
+                                       data-testid="view-user-@user.Id">
                                         View
-                                    </button>
+                                    </a>
 
                                     <button class="btn btn-delete-red"
                                             data-bs-toggle="modal"
@@ -257,9 +257,8 @@
     </div>
 </div>
 
-<!-- Render Modals directly from local folder -->
+<!-- Render Modals -->
 @await Html.PartialAsync("_CreateUserModal")
-@await Html.PartialAsync("_UserDetailsModal")
 @await Html.PartialAsync("_DeleteUserModal")
 
 @section Scripts {

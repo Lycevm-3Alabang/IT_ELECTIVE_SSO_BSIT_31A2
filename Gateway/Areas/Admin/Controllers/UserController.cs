@@ -149,30 +149,5 @@ namespace Gateway.Areas.Admin.Controllers
 
             return RedirectToAction(nameof(Index));
         }
-
-        // POST: /Admin/Users/ResetPassword/{id}
-        // Cabardo i5
-        [HttpPost]
-        public async Task<IActionResult> ResetPassword(string id)
-        {
-            var user = await _userManager.FindByIdAsync(id);
-            if (user == null)
-            {
-                return NotFound();
-            }
-
-            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
-            var result = await _userManager.ResetPasswordAsync(user, token, "Test_123!");
-
-            if (result.Succeeded)
-            {
-                var performedBy = User.Identity?.Name ?? "Admin";
-                System.Diagnostics.Trace.WriteLine($"[AUDIT LOG] Password reset for {user.Email} (ID: {user.Id}) by {performedBy} at {DateTime.UtcNow}");
-
-                return Json(new { success = true });
-            }
-
-            return BadRequest();
-        }
     }
 }
