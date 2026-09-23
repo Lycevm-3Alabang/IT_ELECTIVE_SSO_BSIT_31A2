@@ -13,10 +13,6 @@
         border-radius: 4px;
     }
 
-    .modal-dark-input-error {
-        border: 2px solid #e55353 !important;
-    }
-
     .btn-modal-cancel {
         background-color: #6c757d;
         color: #ffffff;
@@ -41,17 +37,22 @@
                 <div class="modal-body">
                     <div class="mb-3">
                         <label for="createEmail" class="form-label fw-semibold small text-light">Email Address</label>
-                        <input type="email" id="createEmail" class="form-control modal-dark-input" placeholder="user@gmail.com" required data-testid="input-email">
+                        <input type="email" id="createEmail" name="Email" class="form-control modal-dark-input" placeholder="user@gmail.com" required data-testid="input-email">
+                        <!-- Email specific error below input -->
+                        <div id="emailError" class="text-danger small mt-1 d-none" data-testid="email-error"></div>
                     </div>
                     <div class="mb-3">
                         <label for="createPassword" class="form-label fw-semibold small text-light">Temporary Password</label>
-                        <input type="password" id="createPassword" class="form-control modal-dark-input" required minlength="6" data-testid="input-password">
+                        <input type="password" id="createPassword" name="Password" class="form-control modal-dark-input" required minlength="6" data-testid="input-password">
+                        <!-- Password specific error below input -->
+                        <div id="passwordError" class="text-danger small mt-1 d-none" data-testid="password-error"></div>
                     </div>
                     <div class="mb-3">
                         <label for="createConfirmPassword" class="form-label fw-semibold small text-light">Confirm Password</label>
-                        <input type="password" id="createConfirmPassword" class="form-control modal-dark-input" required data-testid="input-confirm-password">
-                        <div id="confirmPasswordError" class="text-danger small mt-2 d-none" data-testid="password-mismatch-error">
-                            Password do not match!
+                        <input type="password" id="createConfirmPassword" name="ConfirmPassword" class="form-control modal-dark-input" required data-testid="input-confirm-password">
+                        <!-- Password mismatch error below input -->
+                        <div id="confirmPasswordError" class="text-danger small mt-1 d-none" data-testid="password-mismatch-error">
+                            Passwords do not match!
                         </div>
                     </div>
                 </div>

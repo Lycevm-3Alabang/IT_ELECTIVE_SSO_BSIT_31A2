@@ -13,7 +13,7 @@ namespace ITElectiveSSO.Tests.UI
             string returnUrl = "https://testautomation.com/callback";
 
             // Act
-            bool isValid = !string.IsNullOrEmpty(appName) && returnUrl.StartsWith("https://" /);
+            bool isValid = !string.IsNullOrEmpty(appName) && returnUrl.StartsWith("https://");
 
             // Assert
             Assert.True(isValid);
