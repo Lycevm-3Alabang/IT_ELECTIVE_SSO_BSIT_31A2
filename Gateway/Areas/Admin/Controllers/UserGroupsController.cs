@@ -105,6 +105,22 @@ namespace Gateway.Areas.Admin.Controllers
             return RedirectToAction("Details", "Users", new { id = userId });
         }
 
-        // TODO (Task 2): DELETE Unassign — remove relationship
+        [HttpDelete("{groupId}")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Unassign(string userId, int groupId)
+        {
+            var userGroup = await _context.UserGroups
+                .FirstOrDefaultAsync(ug => ug.UserId == userId && ug.GroupId == groupId);
+
+            if (userGroup == null)
+            {
+                return NotFound();
+            }
+
+            _context.UserGroups.Remove(userGroup);
+            await _context.SaveChangesAsync();
+
+            return Ok(new { success = true });
+        }
     }
 }
