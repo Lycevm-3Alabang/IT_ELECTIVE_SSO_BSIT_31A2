@@ -33,6 +33,97 @@
     </dd>
 </dl>
 
+<h3>Assigned Groups</h3>
+<ul id="assigned-groups-list">
+    <li>Loading...</li>
+</ul>
+
+<form asp-controller="UserGroups" asp-action="Assign" asp-route-userId="@Model.Id" method="post" class="form-inline">
+    @Html.AntiForgeryToken()
+    <select name="GroupId" id="available-groups-dropdown" class="form-control mr-2">
+        <option value="">Loading available groups...</option>
+    </select>
+    <button type="submit" class="btn btn-primary">Assign to Group</button>
+</form>
+
+@section Scripts {
+    <script>
+        const userId = '@Model.Id';
+
+        function loadAssignedGroups() {
+            fetch(/Admin/Users/${userId}/Groups)
+                .then(response => response.json())
+                .then(groups => {
+                    const list = document.getElementById('assigned-groups-list');
+                    list.innerHTML = '';
+
+                    if (groups.length === 0) {
+                        list.innerHTML = '<li>No groups assigned.</li>';
+                        return;
+                    }
+
+                    groups.forEach(g => {
+                        const li = document.createElement('li');
+                        li.textContent = ${g.appName} — ${g.name} (level ${g.powerLevel}) ;
+
+                        const removeBtn = document.createElement('button');
+                        removeBtn.textContent = 'Remove';
+                        removeBtn.className = 'btn btn-sm btn-outline-danger ml-2';
+                        removeBtn.onclick = function () {
+                            removeGroup(g.groupId);
+                        };
+
+                        li.appendChild(removeBtn);
+                        list.appendChild(li);
+                    });
+                });
+        }
+
+        function loadAvailableGroups() {
+            fetch(/Admin/Users/${userId}/Groups/Available)
+                .then(response => response.json())
+                .then(groups => {
+                    const dropdown = document.getElementById('available-groups-dropdown');
+                    dropdown.innerHTML = '';
+
+                    if (groups.length === 0) {
+                        dropdown.innerHTML = '<option value="">No available groups</option>';
+                        return;
+                    }
+
+                    groups.forEach(g => {
+                        const option = document.createElement('option');
+                        option.value = g.groupId;
+                        option.textContent = ${g.appName} — ${g.name};
+                        dropdown.appendChild(option);
+                    });
+                });
+        }
+
+        function removeGroup(groupId) {
+            const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+
+            fetch(/Admin/Users/${userId}/Groups/${groupId}, {
+                method: 'DELETE',
+                headers: {
+                    'RequestVerificationToken': token
+                }
+            })
+            .then(response => {
+                if (response.ok) {
+                    loadAssignedGroups();
+                    loadAvailableGroups();
+                } else {
+                    alert('Failed to remove group.');
+                }
+            });
+        }
+
+        loadAssignedGroups();
+        loadAvailableGroups();
+    </script>
+}
+
 <a asp-area="Admin"
    asp-controller="Users"
    asp-action="Index"
