@@ -1,12 +1,13 @@
 ﻿using Gateway.Areas.Admin.Controllers;
 using Gateway.Areas.Admin.Models;
-using ITElectiveSSO.Models;
 using ITELECTIVE_SSO.Data;
+using ITElectiveSSO.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using System.Text.RegularExpressions;
 using Xunit;
 
 namespace Tests
@@ -112,6 +113,20 @@ namespace Tests
             Assert.False(stillAssigned);
         }
 
-        // TASK 8
+        [Fact]
+        public async Task AssignPreventsDuplicateAssignment()
+        {
+            var (userManager, context) = BuildServices(Guid.NewGuid().ToString());
+            var(user, group1, ) = await SeedUserAndGroups(userManager, context);
+            var controller = CreateController(userManager, context);
+
+            await controller.Assign(user.Id, new AssignGroupViewModel { GroupId = group1.Id });
+            await controller.Assign(user.Id, new AssignGroupViewModel { GroupId = group1.Id });
+
+            var assignedCount = await context.UserGroups
+                .CountAsync(ug => ug.UserId == user.Id && ug.GroupId == group1.Id);
+
+            Assert.Equal(1, assignedCount);
+        }
     }
 }
