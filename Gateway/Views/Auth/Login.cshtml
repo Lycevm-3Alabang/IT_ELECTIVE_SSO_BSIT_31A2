@@ -48,7 +48,19 @@
                 }
 
                 <!-- Ensure form is accessible (labels, aria attributes) - FACTOR -->
-                <!-- code here -->
+                <form asp-controller="Auth" asp-action="Login" method="post" novalidate>
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" asp-for="ReturnUrl" />
+
+                    <div class="sso-field">
+                        <label asp-for="Email">Email Address</label>
+                        <input asp-for="Email"
+                               type="email"
+                               autocomplete="username"
+                               required
+                               aria-required="true"
+                               aria-invalid="@(ViewData.ModelState["Email"]?.Errors.Count > 0 ? "true" : "false")"
+                               aria-describedby="email-error" />
                         <!-- Style error messages clearly - CABARDO -->
                         <span asp-validation-for="Email" class="sso-field-error" id="email-error"></span>
                     </div>
