@@ -141,8 +141,7 @@ body {
     margin: 0 0 1rem;
     font-size: 0.9rem;
     color: #e2e8f0;
-} 
-    .sso-card {
+} .sso-card {
     background: var(--sso-navy);
     border-radius: 10px;
     padding: 2rem;
@@ -198,5 +197,9 @@ body {
         background: var(--sso-blue-hover);
     }
     /* Remove/lock down registration links - DAYGON */
-    /* code here */
+    .sso-footer {
+        margin-top: 1.25rem;
+        font-size: 0.8rem;
+        color: #94a3b8;
+    }
 }
