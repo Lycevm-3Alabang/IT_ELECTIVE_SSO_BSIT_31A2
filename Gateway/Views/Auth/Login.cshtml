@@ -25,7 +25,13 @@
             </header>
 
             <!-- Display app name if provided in returnUrl - LLORENTE -->
-            <!-- code here -->
+            @if (!string.IsNullOrWhiteSpace(Model.AppName))
+            {
+                <p class="sso-app-context">
+                    Signing in to <strong>@Model.AppName</strong>
+                </p>
+            }
+            
 
             <!-- Customize layout and branding - CABARDO -->
             <div class="sso-card">
