@@ -31,7 +31,13 @@ body {
 /* code here */
 
 /* Add SSO title "IT ELECTIVE - SSO" - CABARDO */
-/* code here */
+.sso-title {
+    margin: 0;
+    font-size: 2rem;
+    font-weight: 800;
+    letter-spacing: 0.02em;
+    color: #ffffff;
+}
 
 .sso-title-dash {
     color: var(--sso-blue);
@@ -84,7 +90,15 @@ body {
     /* Customize layout and branding - CABARDO */
     /* code here */
     /* Add SSO title "IT ELECTIVE - SSO" - CABARDO */
-    /* code here */
+    .sso-title {
+    margin: 0;
+    font-size: 2rem;
+    font-weight: 800;
+    letter-spacing: 0.02em;
+    color: #ffffff;
+} .sso-title-dash {
+    color: var(--sso-blue);
+}
     /* Display app name if provided in returnUrl - LLORENTE */
     /* code here */
     /* Style error messages clearly - CABARDO */
