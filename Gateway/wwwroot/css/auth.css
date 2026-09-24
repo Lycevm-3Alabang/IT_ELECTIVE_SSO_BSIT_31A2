@@ -68,7 +68,19 @@ body {
 }
 
 /* Display app name if provided in returnUrl - LLORENTE */
-/* code here */
+.sso-app-context {
+    margin: 0 0 1rem;
+    font-size: 0.9rem;
+    color: #e2e8f0;
+}
+
+.sso-card {
+    background: var(--sso-navy);
+    border-radius: 10px;
+    padding: 2rem;
+    text-align: left;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
 
 /* Style error messages clearly - CABARDO */
 .sso-alert {
@@ -125,7 +137,18 @@ body {
     color: var(--sso-blue);
 }
     /* Display app name if provided in returnUrl - LLORENTE */
-    /* code here */
+    .sso-app-context {
+    margin: 0 0 1rem;
+    font-size: 0.9rem;
+    color: #e2e8f0;
+} 
+    .sso-card {
+    background: var(--sso-navy);
+    border-radius: 10px;
+    padding: 2rem;
+    text-align: left;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
     /* Style error messages clearly - CABARDO */
     .sso-alert {
     display: flex;

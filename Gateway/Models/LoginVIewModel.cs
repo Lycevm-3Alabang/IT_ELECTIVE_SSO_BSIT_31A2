@@ -10,8 +10,11 @@ namespace ITElectiveSSO.Models
         // Ensure form is accessible (labels, aria attributes) - FACTOR
         // code here
 
+        public string? ReturnUrl { get; set; }
+
         // Display app name if provided in returnUrl - LLORENTE
-        // code here
+        public string? AppName { get; set; }
+
 
         // Style error messages clearly - CABARDO
         public string? ErrorMessage { get; set; }
