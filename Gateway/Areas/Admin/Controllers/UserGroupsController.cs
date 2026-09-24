@@ -42,7 +42,30 @@ namespace Gateway.Areas.Admin.Controllers
             return Json(availableGroups);
         }
 
-        // TODO (Task 3): GET Index — list user's groups
+        [HttpGet]
+        public async Task<IActionResult> Index(string userId)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            var assignedGroups = await _context.UserGroups
+                .Where(ug => ug.UserId == userId)
+                .Include(ug => ug.Group)
+                    .ThenInclude(g => g.TenantApp)
+                .Select(ug => new
+                {
+                    groupId = ug.Group.Id,
+                    name = ug.Group.Name,
+                    appName = ug.Group.TenantApp.Name,
+                    powerLevel = ug.Group.PowerLevel
+                })
+                .ToListAsync();
+
+            return Json(assignedGroups);
+        }
 
         // POST /Admin/Users/{userId}/Groups
         [HttpPost]
