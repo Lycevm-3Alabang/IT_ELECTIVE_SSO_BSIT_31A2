@@ -10,7 +10,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>@ViewData["Title"]</title>
     <!-- Customize layout and branding - CABARDO -->
-    <!-- code here -->
+    <link rel="stylesheet" href="~/css/auth.css" asp-append-version="true" />
 </head>
 <body>
     <!-- Scaffold Identity login page - VILLAMOR -->
@@ -28,7 +28,7 @@
             <!-- code here -->
 
             <!-- Customize layout and branding - CABARDO -->
-            <!-- code here -->
+            <div class="sso-card">
                 <!-- Style error messages clearly - CABARDO -->
                 @if (!string.IsNullOrWhiteSpace(Model.ErrorMessage))
                 {

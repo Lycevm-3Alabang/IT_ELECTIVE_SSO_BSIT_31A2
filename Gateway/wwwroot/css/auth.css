@@ -1,5 +1,11 @@
 ﻿/* Customize layout and branding -CABARDO */
-/* code here */
+:root {
+    --sso-navy: #0f1b33;
+    --sso-navy-light: #16233f;
+    --sso-blue: #1e88d8;
+    --sso-blue-hover: #1876ba;
+    --sso-gray-field: #cfd3d8;
+    --sso-text-dark: #1b1f27;
     /* Style error messages clearly -CABARDO */
     --sso-error: #c0392b;
     --sso-error-bg: #fdecea;
@@ -28,7 +34,17 @@ body {
 }
 
 /* Customize layout and branding - CABARDO */
-/* code here */
+.sso-bg {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background-image: url('../images/circuit-bg.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    opacity: 0.8;
+}
+
 
 /* Add SSO title "IT ELECTIVE - SSO" - CABARDO */
 .sso-title {
@@ -88,7 +104,16 @@ body {
     padding: 2rem 1rem;
 }
     /* Customize layout and branding - CABARDO */
-    /* code here */
+    .sso-bg {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background-image: url('../images/circuit-bg.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    opacity: 0.8;
+}
     /* Add SSO title "IT ELECTIVE - SSO" - CABARDO */
     .sso-title {
     margin: 0;
@@ -119,7 +144,7 @@ body {
     flex-shrink: 0;
     margin-top: 1px;
 }
-    /* Ensure form is accessible (labels, aria attributes) - CABARDO */
+    /* Ensure form is accessible (labels, aria attributes) - FACTOR */
     /* code here */
     /* Style error messages clearly - CABARDO */
     .sso-field-error {
