@@ -164,7 +164,8 @@ namespace Gateway.Areas.Admin.Controllers
 
             var tempPassword = GenerateTemporaryPassword();
 
-            // TASK 3: Hash and update password via UserManager
+            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+            var result = await _userManager.ResetPasswordAsync(user, token, tempPassword);
 
             if (!result.Succeeded)
             {
