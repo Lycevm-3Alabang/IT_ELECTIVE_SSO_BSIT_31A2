@@ -173,7 +173,15 @@ namespace Gateway.Areas.Admin.Controllers
                 return BadRequest(new { success = false, message = errors });
             }
 
-            // TASK 6: Log password reset in AuditLogs
+            _context.AuditLogs.Add(new AuditLog
+            {
+                UserId = user.Id,
+                Action = "PasswordReset",
+                Details = $"Password was reset for user '{user.Email}' by an administrator.",
+                IpAddress = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+                Timestamp = DateTime.UtcNow
+            });
+            await _context.SaveChangesAsync();
 
             return Json(new { success = true, tempPassword });
         }
