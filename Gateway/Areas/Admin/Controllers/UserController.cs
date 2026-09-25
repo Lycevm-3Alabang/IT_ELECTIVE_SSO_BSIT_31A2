@@ -1,5 +1,6 @@
 ﻿using ITELECTIVE_SSO.Data;
 using ITElectiveSSO.Models;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -149,5 +150,33 @@ namespace Gateway.Areas.Admin.Controllers
 
             return RedirectToAction(nameof(Index));
         }
+
+        // POST /Admin/Users/ResetPassword/{id} endpoint
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ResetPassword(string id)
+        {
+            var user = await _userManager.FindByIdAsync(id);
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            // TASK 2: Generate random temporary password
+
+            // TASK 3: Hash and update password via UserManager
+
+            if (!result.Succeeded)
+            {
+                var errors = string.Join("; ", result.Errors.Select(e => e.Description));
+                return BadRequest(new { success = false, message = errors });
+            }
+
+            // TASK 6: Log password reset in AuditLogs
+
+            // TASK 4: Display temporary password to admin (one-time view)
+        }
+
+        // TASK 2: Generate random temporary password
     }
 }
