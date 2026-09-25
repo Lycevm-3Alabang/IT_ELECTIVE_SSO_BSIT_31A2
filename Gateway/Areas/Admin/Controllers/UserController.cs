@@ -175,7 +175,7 @@ namespace Gateway.Areas.Admin.Controllers
 
             // TASK 6: Log password reset in AuditLogs
 
-            // TASK 4: Display temporary password to admin (one-time view)
+            return Json(new { success = true, tempPassword });
         }
 
         private static string GenerateTemporaryPassword()
