@@ -162,7 +162,7 @@ namespace Gateway.Areas.Admin.Controllers
                 return NotFound();
             }
 
-            // TASK 2: Generate random temporary password
+            var tempPassword = GenerateTemporaryPassword();
 
             // TASK 3: Hash and update password via UserManager
 
@@ -177,6 +177,34 @@ namespace Gateway.Areas.Admin.Controllers
             // TASK 4: Display temporary password to admin (one-time view)
         }
 
-        // TASK 2: Generate random temporary password
+        private static string GenerateTemporaryPassword()
+        {
+            const string lowercase = "abcdefghijkmnpqrstuvwxyz";
+            const string uppercase = "ABCDEFGHJKLMNPQRSTUVWXYZ";
+            const string digits = "23456789";
+
+            var random = Random.Shared;
+
+            var guaranteedChars = new[]
+            {
+                lowercase[random.Next(lowercase.Length)],
+                uppercase[random.Next(uppercase.Length)],
+                digits[random.Next(digits.Length)],
+                digits[random.Next(digits.Length)]
+            };
+
+            var allChars = lowercase + uppercase + digits;
+            var passwordChars = guaranteedChars
+                .Concat(Enumerable.Range(0, 6).Select(_ => allChars[random.Next(allChars.Length)]))
+                .ToArray();
+
+            for (int i = passwordChars.Length - 1; i > 0; i--)
+            {
+                int j = random.Next(i + 1);
+                (passwordChars[i], passwordChars[j]) = (passwordChars[j], passwordChars[i]);
+            }
+
+            return new string(passwordChars);
+        }
     }
 }
