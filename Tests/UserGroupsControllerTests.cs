@@ -1,13 +1,12 @@
 ﻿using Gateway.Areas.Admin.Controllers;
 using Gateway.Areas.Admin.Models;
-using ITELECTIVE_SSO.Data;
 using ITElectiveSSO.Models;
+using ITELECTIVE_SSO.Data;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using System.Text.RegularExpressions;
 using Xunit;
 
 namespace Tests
@@ -98,10 +97,10 @@ namespace Tests
         }
 
         [Fact]
-        public async Task UnassignRemovesRelationship()
+        public async Task Unassign_RemovesRelationship()
         {
             var (userManager, context) = BuildServices(Guid.NewGuid().ToString());
-            var(user, group1, ) = await SeedUserAndGroups(userManager, context);
+            var (user, group1, _) = await SeedUserAndGroups(userManager, context);
             var controller = CreateController(userManager, context);
 
             await controller.Assign(user.Id, new AssignGroupViewModel { GroupId = group1.Id });
@@ -114,10 +113,10 @@ namespace Tests
         }
 
         [Fact]
-        public async Task AssignPreventsDuplicateAssignment()
+        public async Task Assign_PreventsDuplicateAssignment()
         {
             var (userManager, context) = BuildServices(Guid.NewGuid().ToString());
-            var(user, group1, ) = await SeedUserAndGroups(userManager, context);
+            var (user, group1, _) = await SeedUserAndGroups(userManager, context);
             var controller = CreateController(userManager, context);
 
             await controller.Assign(user.Id, new AssignGroupViewModel { GroupId = group1.Id });
