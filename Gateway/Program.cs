@@ -1,3 +1,4 @@
+using Gateway.Services;
 using ITELECTIVE_SSO.Data;
 using ITElectiveSSO.Models;
 using Microsoft.AspNetCore.Identity;
@@ -38,6 +39,10 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.ExpireTimeSpan = TimeSpan.FromHours(9);
     options.SlidingExpiration = true;
 });
+
+builder.Services.AddScoped<IReturnUrlValidator, Gateway.Services.ReturnUrlValidator>();
+
+builder.Services.AddScoped<IAuditService, Gateway.Services.AuditService>();
 
 var app = builder.Build();
 
