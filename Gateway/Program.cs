@@ -9,6 +9,12 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 
+// --- Antiforgery: allow the token to be sent via header (needed for our fetch/AJAX calls) ---
+builder.Services.AddAntiforgery(options =>
+{
+    options.HeaderName = "RequestVerificationToken";
+});
+
 // --- EF Core + SQLite ---
 builder.Services.AddDbContext<SsoDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -30,7 +36,6 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 })
 .AddEntityFrameworkStores<SsoDbContext>()
 .AddDefaultTokenProviders();
-
 // --- Cookie Settings (Identity Sign-In Scheme) ---
 builder.Services.ConfigureApplicationCookie(options =>
 {

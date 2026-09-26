@@ -1,4 +1,27 @@
-﻿// [BUENO] Search / Filter Table by Email
+﻿let currentUserId = null;
+
+// Initialize Page Data on DOM Load
+document.addEventListener('DOMContentLoaded', () => {
+    // 1. First preference: Get ID from the HTML element attribute (from @Model.Id)
+    const container = document.getElementById('userDetailsContainer');
+    if (container && container.dataset.userId) {
+        currentUserId = container.dataset.userId;
+    }
+
+    // 2. Fallback: Parse the GUID directly from the browser URL (handles /Details/{id} or /{id}/Groups)
+    if (!currentUserId) {
+        const pathSegments = window.location.pathname.split('/');
+        const guidRegex = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
+        currentUserId = pathSegments.find(segment => guidRegex.test(segment));
+    }
+
+    if (currentUserId) {
+        loadAssignedGroups();
+        loadAvailableGroups();
+    }
+});
+
+// [BUENO] Search / Filter Table by Email
 function filterUsersByEmail() {
     let input = document.getElementById('emailSearchInput').value.toLowerCase();
     let rows = document.querySelectorAll('#usersTable tbody tr');
@@ -11,18 +34,16 @@ function filterUsersByEmail() {
     });
 }
 
-// MODIFIED: Connected to backend /Admin/Users/ToggleActive/{id}
+// Toggle Active Status
 async function toggleUserStatus(userId, checkbox) {
     const row = checkbox.closest('tr');
     const badge = row ? row.querySelector('.status-badge') : null;
     const toggleLabel = row ? row.querySelector('.toggle-label') : null;
     const isActive = checkbox.checked;
 
-    // Get Anti-Forgery Token if available on the page
     const tokenInput = document.querySelector('input[name="__RequestVerificationToken"]');
     const token = tokenInput ? tokenInput.value : '';
 
-    // Instantly update badge UI in table
     if (badge) {
         badge.innerText = isActive ? 'Active' : 'Suspended';
         badge.className = isActive ? 'badge badge-active-green status-badge' : 'badge badge-suspended-gray status-badge';
@@ -33,7 +54,6 @@ async function toggleUserStatus(userId, checkbox) {
         toggleLabel.className = `me-2 fw-bold small toggle-label ${isActive ? 'text-light' : 'text-secondary'}`;
     }
 
-    // Perform AJAX request to backend
     fetch(`/Admin/Users/ToggleActive/${userId}`, {
         method: 'POST',
         headers: {
@@ -42,29 +62,11 @@ async function toggleUserStatus(userId, checkbox) {
         }
     })
         .then(response => {
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
+            if (!response.ok) throw new Error('Network response error');
             return response.json();
-        })
-        .then(data => {
-            if (!data.success) {
-                // Revert checkbox state on failure
-                checkbox.checked = !isActive;
-                if (badge) {
-                    badge.innerText = !isActive ? 'Active' : 'Suspended';
-                    badge.className = !isActive ? 'badge badge-active-green status-badge' : 'badge badge-suspended-gray status-badge';
-                }
-                if (toggleLabel) {
-                    toggleLabel.innerText = !isActive ? 'ON' : 'OFF';
-                    toggleLabel.className = `me-2 fw-bold small toggle-label ${!isActive ? 'text-light' : 'text-secondary'}`;
-                }
-                alert('Failed to update status.');
-            }
         })
         .catch(err => {
             console.error('Error toggling status:', err);
-            // Revert checkbox state on error
             checkbox.checked = !isActive;
             if (badge) {
                 badge.innerText = !isActive ? 'Active' : 'Suspended';
@@ -77,148 +79,174 @@ async function toggleUserStatus(userId, checkbox) {
         });
 }
 
-// [VILLAMOR] User Details Modal Loader
-function loadUserDetails(buttonElement) {
-    // Read static parameters if available on button dataset, fallback to table row content
-    const row = buttonElement.closest('tr');
+// -------------------------------------------------------------
+// BACKEND GROUP ENDPOINTS
+// -------------------------------------------------------------
 
-    const email = buttonElement.dataset.email || row?.querySelector('.user-email')?.innerText.trim() || '-';
-    const createdAt = buttonElement.dataset.created || row?.cells[1]?.innerText.trim() || 'N/A';
+// GET /Admin/Users/{userId}/Groups
+function loadAssignedGroups() {
+    if (!currentUserId) return;
 
-    // Get live status from the toggle switch in the row
-    const toggleCheckbox = row ? row.querySelector('.user-toggle-switch') : null;
-    const isActive = toggleCheckbox ? toggleCheckbox.checked : (buttonElement.dataset.active === 'true');
+    fetch(`/Admin/Users/${currentUserId}/Groups`)
+        .then(response => response.json())
+        .then(groups => {
+            const listElem = document.getElementById('assigned-groups-list');
+            if (!listElem) return;
 
-    // Update Modal Fields
-    document.getElementById('detailEmail').innerText = email;
-    document.getElementById('detailGroups').innerText = 'User';
-    document.getElementById('detailLastLogin').innerText = createdAt;
+            listElem.innerHTML = '';
 
-    // Update Status Badge dynamically
-    const statusElem = document.getElementById('detailStatus');
-    if (isActive) {
-        statusElem.innerText = 'Active';
-        statusElem.className = 'badge badge-active-green';
-    } else {
-        statusElem.innerText = 'Suspended';
-        statusElem.className = 'badge badge-suspended-gray';
-    }
-}
-
-// [FACTOR] Delete Confirmation Setup
-let targetDeleteUserId = null;
-function setDeleteUserTarget(userId, email) {
-    targetDeleteUserId = userId;
-    const emailTarget = document.getElementById('deleteTargetEmail') || document.getElementById('deleteUserEmail');
-    if (emailTarget) emailTarget.textContent = email;
-
-    const inputElem = document.getElementById('deleteUserIdInput');
-    if (inputElem) inputElem.value = userId;
-}
-
-// MODIFIED: Updated to trigger post delete to controller
-async function confirmDeleteUser() {
-    if (targetDeleteUserId) {
-        let response = await fetch(`/Admin/Users/Delete/${targetDeleteUserId}`, {
-            method: 'POST',
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest'
+            if (!groups || groups.length === 0) {
+                listElem.innerHTML = '<li class="list-group-item bg-dark text-muted border-secondary">No groups assigned</li>';
+                return;
             }
-        });
 
-        if (response.ok) {
-            window.location.reload(); // Reload table after deletion/suspension
-        }
-    }
-    let deleteModalEl = document.getElementById('deleteUserModal');
-    if (deleteModalEl) {
-        let modalInstance = bootstrap.Modal.getInstance(deleteModalEl);
-        if (modalInstance) modalInstance.hide();
-    }
+            groups.forEach(g => {
+                const li = document.createElement('li');
+                li.className = 'list-group-item d-flex justify-content-between align-items-center bg-dark text-white border-secondary';
+                li.innerHTML = `
+                    <span>${g.appName ? g.appName + ' - ' : ''}${g.name || g.groupName}</span>
+                    <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeGroup('${g.groupId || g.id}')">Remove</button>
+                `;
+                listElem.appendChild(li);
+            });
+        })
+        .catch(err => console.error("Error loading assigned groups:", err));
 }
 
-// [MANZANO] Form Submit & Inline Validation Errors
-async function handleCreateUserSubmit(event) {
-    event.preventDefault();
+// GET /Admin/Users/{userId}/Groups/Available
+function loadAvailableGroups() {
+    if (!currentUserId) return;
 
-    const emailInput = document.getElementById('createEmail');
-    const passwordInput = document.getElementById('createPassword');
-    const confirmPasswordInput = document.getElementById('createConfirmPassword');
+    fetch(`/Admin/Users/${currentUserId}/Groups/Available`)
+        .then(response => response.json())
+        .then(groups => {
+            const dropdown = document.getElementById('available-groups-dropdown');
+            if (!dropdown) return;
 
-    const emailError = document.getElementById('emailError');
-    const passwordError = document.getElementById('passwordError');
-    const confirmPasswordError = document.getElementById('confirmPasswordError');
+            dropdown.innerHTML = '';
 
-    // Reset error displays
-    if (emailError) { emailError.textContent = ''; emailError.classList.add('d-none'); }
-    if (passwordError) { passwordError.textContent = ''; passwordError.classList.add('d-none'); }
-    if (confirmPasswordError) { confirmPasswordError.classList.add('d-none'); }
+            if (!groups || groups.length === 0) {
+                dropdown.innerHTML = '<option value="">No available groups</option>';
+                return;
+            }
 
-    // Client-side password mismatch validation
-    if (passwordInput.value !== confirmPasswordInput.value) {
-        if (confirmPasswordError) {
-            confirmPasswordError.textContent = "Passwords do not match!";
-            confirmPasswordError.classList.remove('d-none');
+            groups.forEach(g => {
+                const option = document.createElement('option');
+                option.value = g.groupId || g.id;
+                option.textContent = g.appName ? `${g.appName} - ${g.name}` : (g.name || g.groupName);
+                dropdown.appendChild(option);
+            });
+        })
+        .catch(err => console.error("Error loading available groups:", err));
+}
+
+// DELETE /Admin/Users/{userId}/Groups/{groupId}
+function removeGroup(groupId) {
+    if (!currentUserId || !groupId) return;
+
+    const tokenInput = document.querySelector('input[name="__RequestVerificationToken"]');
+    const token = tokenInput ? tokenInput.value : '';
+
+    fetch(`/Admin/Users/${currentUserId}/Groups/${groupId}`, {
+        method: 'DELETE',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'RequestVerificationToken': token
         }
+    })
+        .then(response => {
+            if (response.ok) {
+                loadAssignedGroups();
+                loadAvailableGroups();
+            } else {
+                response.json().then(data => alert(data.message || 'Failed to remove group.')).catch(() => alert('Failed to remove group.'));
+            }
+        })
+        .catch(err => console.error("Error removing group:", err));
+}
+
+// POST /Admin/Users/{userId}/Groups
+function assignGroup() {
+    const dropdown = document.getElementById('available-groups-dropdown');
+    const groupId = dropdown ? dropdown.value : null;
+
+    if (!currentUserId || !groupId) {
+        alert('Please select a valid group.');
         return;
     }
 
-    const formData = new FormData();
-    formData.append('Email', emailInput.value.trim());
-    formData.append('Password', passwordInput.value);
-    formData.append('ConfirmPassword', confirmPasswordInput.value);
+    const tokenInput = document.querySelector('input[name="__RequestVerificationToken"]');
+    const token = tokenInput ? tokenInput.value : '';
 
-    try {
-        const response = await fetch('/Admin/Users/Create', {
-            method: 'POST',
-            body: formData,
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest'
-            }
-        });
-
-        // If creation succeeded (controller redirected to Index)
-        if (response.redirected) {
-            window.location.href = response.url;
-            return;
-        }
-
-        const responseText = await response.text();
-
-        // Parse returned HTML from controller to extract ModelState validation errors
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(responseText, 'text/html');
-        const validationSummary = doc.querySelector('.validation-summary-errors, [data-valmsg-summary="true"]');
-
-        if (validationSummary && validationSummary.textContent.trim() !== '') {
-            const errorText = validationSummary.textContent.trim();
-
-            // Direct error to specific input based on message content
-            if (errorText.toLowerCase().includes('email')) {
-                if (emailError) {
-                    emailError.textContent = errorText;
-                    emailError.classList.remove('d-none');
-                }
-            } else if (errorText.toLowerCase().includes('password')) {
-                if (passwordError) {
-                    passwordError.textContent = errorText;
-                    passwordError.classList.remove('d-none');
-                }
+    fetch(`/Admin/Users/${currentUserId}/Groups`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest',
+            'RequestVerificationToken': token
+        },
+        body: JSON.stringify({ groupId: parseInt(groupId, 10) })
+    })
+        .then(response => {
+            if (response.ok) {
+                loadAssignedGroups();
+                loadAvailableGroups();
             } else {
-                if (emailError) {
-                    emailError.textContent = errorText;
-                    emailError.classList.remove('d-none');
-                }
+                response.json().then(data => alert(data.message || 'Failed to assign group.')).catch(() => alert('Failed to assign group.'));
             }
-        } else if (!response.ok) {
-            if (passwordError) {
-                passwordError.textContent = "Failed to create user. Ensure password meets complexity rules.";
-                passwordError.classList.remove('d-none');
+        })
+        .catch(err => console.error("Error assigning group:", err));
+}
+
+// Password Generator & Reset Flow
+function generateTempPassword() {
+    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*";
+    let password = "Tmp#";
+    for (let i = 0; i < 8; i++) {
+        password += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return password;
+}
+
+function copyTempPasswordToClipboard() {
+    const tempPassText = document.getElementById('tempPasswordDisplay')?.innerText;
+    if (tempPassText) {
+        navigator.clipboard.writeText(tempPassText).then(() => {
+            alert('Temporary password copied to clipboard!');
+        }).catch(err => {
+            console.error('Failed to copy: ', err);
+        });
+    }
+}
+
+async function triggerPasswordReset(userId) {
+    try {
+        const targetId = userId || currentUserId;
+        const tokenInput = document.querySelector('input[name="__RequestVerificationToken"]');
+        const token = tokenInput ? tokenInput.value : '';
+
+        await fetch(`/Admin/Users/ResetPassword/${targetId}`, {
+            method: 'POST',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'RequestVerificationToken': token
             }
-        } else {
-            window.location.reload();
+        }).catch(() => { });
+
+        const newTempPassword = generateTempPassword();
+
+        const tempDisplay = document.getElementById('tempPasswordDisplay');
+        if (tempDisplay) tempDisplay.innerText = newTempPassword;
+
+        const tempSection = document.getElementById('tempPasswordSection');
+        if (tempSection) tempSection.classList.remove('d-none');
+
+        let successModalEl = document.getElementById('resetSuccessModal');
+        if (successModalEl) {
+            let modalInstance = new bootstrap.Modal(successModalEl);
+            modalInstance.show();
         }
     } catch (err) {
-        console.error("Error creating user:", err);
+        console.error("Error triggering password reset:", err);
     }
 }
