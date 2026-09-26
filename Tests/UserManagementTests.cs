@@ -3,6 +3,9 @@ using ITELECTIVE_SSO.Data;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Gateway.Areas.Admin.Controllers;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Xunit;
 
 namespace Tests
@@ -33,6 +36,35 @@ namespace Tests
 
             var provider = services.BuildServiceProvider();
             return provider.GetRequiredService<UserManager<ApplicationUser>>();
+        }
+
+        private static (UserManager<ApplicationUser> userManager, SsoDbContext context) BuildServices(string dbName)
+        {
+            var services = new ServiceCollection();
+
+            services.AddLogging();
+
+            services.AddDbContext<SsoDbContext>(options =>
+                options.UseInMemoryDatabase(dbName));
+
+            services.AddIdentity<ApplicationUser, IdentityRole>(options =>
+            {
+                options.User.RequireUniqueEmail = true;
+
+                options.Password.RequireDigit = true;
+                options.Password.RequireLowercase = true;
+                options.Password.RequireUppercase = false;
+                options.Password.RequireNonAlphanumeric = false;
+                options.Password.RequiredLength = 6;
+            })
+            .AddEntityFrameworkStores<SsoDbContext>()
+            .AddDefaultTokenProviders();
+
+            var provider = services.BuildServiceProvider();
+            var userManager = provider.GetRequiredService<UserManager<ApplicationUser>>();
+            var context = provider.GetRequiredService<SsoDbContext>();
+
+            return (userManager, context);
         }
 
 
@@ -134,6 +166,37 @@ namespace Tests
             // assert
             Assert.NotNull(updatedUser);
             Assert.True(updatedUser.IsActive);
+        }
+
+        [Fact]
+        public async Task ResetPassword_Post_CreatesAuditLogEntry()
+        {
+            // arrange
+            var (userManager, context) = BuildServices(Guid.NewGuid().ToString());
+            var controller = new UsersController(userManager, context)
+            {
+                ControllerContext = new ControllerContext
+                {
+                    HttpContext = new DefaultHttpContext()
+                }
+            };
+
+            var user = new ApplicationUser
+            {
+                UserName = "audittest@example.com",
+                Email = "audittest@example.com",
+                IsActive = true
+            };
+            await userManager.CreateAsync(user, "OldPassword1");
+
+            // act
+            await controller.ResetPassword(user.Id);
+            var log = await context.AuditLogs
+                .SingleOrDefaultAsync(a => a.Action == "PasswordReset" && a.UserId == user.Id);
+
+            // assert
+            Assert.NotNull(log);
+            Assert.Contains("audittest@example.com", log!.Details);
         }
     }
 }
