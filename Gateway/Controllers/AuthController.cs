@@ -36,10 +36,15 @@ namespace Gateway.Controllers
         }
 
         // ===== TASK 2: GET /Auth/Login?returnUrl=xxx =====
+        [HttpGet]
+        public async Task<IActionResult> Login(string? returnUrl)
+        {
 
             // ===== TASK 3: Validate returnUrl against approved apps =====
 
             // ===== TASK 4: Show error if returnUrl invalid =====
+            return View(new LoginViewModel { ReturnUrl = returnUrl, AppName = app.Name });
+        }
 
 
         // TODO: whoever picks up Tasks 5, 6, 9, 10, 11, 12 adds the POST Login method here
