@@ -81,6 +81,12 @@ namespace Gateway.Controllers
 
             // ===== TASK 11: Rate limiting - lockoutOnFailure counts failures (5 attempts, 15 min lock; see Program.cs) =====
 
+            if (!signInResult.Succeeded)
+            {
+                await _auditService.LogLoginAsync(user.Id, model.Email, false, "Invalid password", ip);
+                ModelState.AddModelError(string.Empty, InvalidCredentialsMessage);
+                return View(model);
+            }
 
             // ===== TASK 6: Check IsActive flag =====
             if (!user.IsActive)
