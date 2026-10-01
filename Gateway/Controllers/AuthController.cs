@@ -79,7 +79,14 @@ namespace Gateway.Controllers
                 return View(model);
             }
 
-            // ===== TASK 11: Rate limiting - lockoutOnFailure counts failures (5 attempts, 15 min lock; see Program.cs) =====
+            var signInResult = await _signInManager.CheckPasswordSignInAsync(user, model.Password, lockoutOnFailure: true);
+
+            if (signInResult.IsLockedOut)
+            {
+                await _auditService.LogLoginAsync(user.Id, model.Email, false, "Account locked out", ip);
+                ModelState.AddModelError(string.Empty, LockedOutMessage);
+                return View(model);
+            }
 
             if (!signInResult.Succeeded)
             {
