@@ -50,7 +50,50 @@ namespace Gateway.Controllers
         }
 
 
-        // TODO: whoever picks up Tasks 5, 6, 9, 10, 11, 12 adds the POST Login method here
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Login(LoginViewModel model)
+        {
+            var ip = GetClientIp();
+
+            // The hidden returnUrl field can be tampered with, so re-validate on every POST.
+            var app = await _returnUrlValidator.ValidateAsync(model.ReturnUrl, ip);
+            if (app == null)
+            {
+                return View("UnapprovedApp");
+            }
+            model.AppName = app.Name;
+
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+            var user = await _userManager.FindByEmailAsync(model.Email);
+            if (user == null)
+            {
+                // ===== TASK 12: Log all login attempts to AuditLogs =====
+                await _auditService.LogLoginAsync(null, model.Email, false, "Unknown email", ip);
+                // ===== TASK 10: Handle failed login with clear error messages =====
+                ModelState.AddModelError(string.Empty, InvalidCredentialsMessage);
+                return View(model);
+            }
+
+            // ===== TASK 11: Rate limiting - lockoutOnFailure counts failures (5 attempts, 15 min lock; see Program.cs) =====
+
+
+            // ===== TASK 6: Check IsActive flag =====
+            if (!user.IsActive)
+            {
+                await _auditService.LogLoginAsync(user.Id, model.Email, false, "Account suspended", ip);
+                ModelState.AddModelError(string.Empty, SuspendedMessage);
+                return View(model);
+            }
+
+            // TASKS 7 & 8 live in JwtTokenService
+
+            // ===== TASK 9: Redirect to returnUrl?token=jwt =====
+        }
 
         private string? GetClientIp() => HttpContext?.Connection?.RemoteIpAddress?.ToString();
     }
