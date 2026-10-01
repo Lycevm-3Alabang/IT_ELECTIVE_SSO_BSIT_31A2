@@ -40,7 +40,7 @@ namespace Gateway.Controllers
         public async Task<IActionResult> Login(string? returnUrl)
         {
 
-            // ===== TASK 3: Validate returnUrl against approved apps =====
+            var app = await _returnUrlValidator.ValidateAsync(returnUrl, GetClientIp());
 
             // ===== TASK 4: Show error if returnUrl invalid =====
             return View(new LoginViewModel { ReturnUrl = returnUrl, AppName = app.Name });
