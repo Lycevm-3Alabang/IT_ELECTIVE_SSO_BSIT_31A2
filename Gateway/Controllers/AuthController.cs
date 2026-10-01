@@ -35,7 +35,6 @@ namespace Gateway.Controllers
             _auditService = auditService;
         }
 
-        // ===== TASK 2: GET /Auth/Login?returnUrl=xxx =====
         [HttpGet]
         public async Task<IActionResult> Login(string? returnUrl)
         {
@@ -56,7 +55,6 @@ namespace Gateway.Controllers
         {
             var ip = GetClientIp();
 
-            // The hidden returnUrl field can be tampered with, so re-validate on every POST.
             var app = await _returnUrlValidator.ValidateAsync(model.ReturnUrl, ip);
             if (app == null)
             {
@@ -72,9 +70,8 @@ namespace Gateway.Controllers
             var user = await _userManager.FindByEmailAsync(model.Email);
             if (user == null)
             {
-                // ===== TASK 12: Log all login attempts to AuditLogs =====
                 await _auditService.LogLoginAsync(null, model.Email, false, "Unknown email", ip);
-                // ===== TASK 10: Handle failed login with clear error messages =====
+
                 ModelState.AddModelError(string.Empty, InvalidCredentialsMessage);
                 return View(model);
             }
@@ -95,7 +92,6 @@ namespace Gateway.Controllers
                 return View(model);
             }
 
-            // ===== TASK 6: Check IsActive flag =====
             if (!user.IsActive)
             {
                 await _auditService.LogLoginAsync(user.Id, model.Email, false, "Account suspended", ip);
@@ -103,7 +99,12 @@ namespace Gateway.Controllers
                 return View(model);
             }
 
-            // TASKS 7 & 8 live in JwtTokenService
+            var token = await _jwtTokenService.CreateTokenAsync(user, app);
+
+            user.LastLoginAt = DateTime.UtcNow;
+            await _userManager.UpdateAsync(user);
+
+            await _auditService.LogLoginAsync(user.Id, user.Email!, true, null, ip);
 
             return Redirect(QueryHelpers.AddQueryString(app.ReturnUrl, "token", token));
         }
