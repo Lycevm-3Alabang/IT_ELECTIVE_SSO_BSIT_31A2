@@ -42,7 +42,10 @@ namespace Gateway.Controllers
 
             var app = await _returnUrlValidator.ValidateAsync(returnUrl, GetClientIp());
 
-            // ===== TASK 4: Show error if returnUrl invalid =====
+            if (app == null)
+            {
+                return View("UnapprovedApp");
+            }
             return View(new LoginViewModel { ReturnUrl = returnUrl, AppName = app.Name });
         }
 
