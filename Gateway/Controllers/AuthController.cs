@@ -92,7 +92,7 @@ namespace Gateway.Controllers
 
             // TASKS 7 & 8 live in JwtTokenService
 
-            // ===== TASK 9: Redirect to returnUrl?token=jwt =====
+            return Redirect(QueryHelpers.AddQueryString(app.ReturnUrl, "token", token));
         }
 
         private string? GetClientIp() => HttpContext?.Connection?.RemoteIpAddress?.ToString();
