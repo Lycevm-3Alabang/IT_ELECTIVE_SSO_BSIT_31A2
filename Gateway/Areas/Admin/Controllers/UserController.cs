@@ -1,5 +1,6 @@
 ﻿using ITELECTIVE_SSO.Data;
 using ITElectiveSSO.Models;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -124,6 +125,95 @@ namespace Gateway.Areas.Admin.Controllers
             await _userManager.UpdateAsync(user);
 
             return RedirectToAction(nameof(Index));
+        }
+
+        // POST: /Admin/Users/ToggleActive/{id}
+        [HttpPost]
+        public async Task<IActionResult> ToggleActive(string id)
+        {
+            var user = await _userManager.FindByIdAsync(id);
+
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            user.IsActive = !user.IsActive;
+            await _userManager.UpdateAsync(user);
+
+            bool isAjax = Request.Headers["X-Requested-With"] == "XMLHttpRequest";
+
+            if (isAjax)
+            {
+                return Json(new { success = true, isActive = user.IsActive });
+            }
+
+            return RedirectToAction(nameof(Index));
+        }
+
+        // POST /Admin/Users/ResetPassword/{id} endpoint
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ResetPassword(string id)
+        {
+            var user = await _userManager.FindByIdAsync(id);
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            var tempPassword = GenerateTemporaryPassword();
+
+            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+            var result = await _userManager.ResetPasswordAsync(user, token, tempPassword);
+
+            if (!result.Succeeded)
+            {
+                var errors = string.Join("; ", result.Errors.Select(e => e.Description));
+                return BadRequest(new { success = false, message = errors });
+            }
+
+            _context.AuditLogs.Add(new AuditLog
+            {
+                UserId = user.Id,
+                Action = "PasswordReset",
+                Details = $"Password was reset for user '{user.Email}' by an administrator.",
+                IpAddress = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+                Timestamp = DateTime.UtcNow
+            });
+            await _context.SaveChangesAsync();
+
+            return Json(new { success = true, tempPassword });
+        }
+
+        private static string GenerateTemporaryPassword()
+        {
+            const string lowercase = "abcdefghijkmnpqrstuvwxyz";
+            const string uppercase = "ABCDEFGHJKLMNPQRSTUVWXYZ";
+            const string digits = "23456789";
+
+            var random = Random.Shared;
+
+            var guaranteedChars = new[]
+            {
+                lowercase[random.Next(lowercase.Length)],
+                uppercase[random.Next(uppercase.Length)],
+                digits[random.Next(digits.Length)],
+                digits[random.Next(digits.Length)]
+            };
+
+            var allChars = lowercase + uppercase + digits;
+            var passwordChars = guaranteedChars
+                .Concat(Enumerable.Range(0, 6).Select(_ => allChars[random.Next(allChars.Length)]))
+                .ToArray();
+
+            for (int i = passwordChars.Length - 1; i > 0; i--)
+            {
+                int j = random.Next(i + 1);
+                (passwordChars[i], passwordChars[j]) = (passwordChars[j], passwordChars[i]);
+            }
+
+            return new string(passwordChars);
         }
     }
 }

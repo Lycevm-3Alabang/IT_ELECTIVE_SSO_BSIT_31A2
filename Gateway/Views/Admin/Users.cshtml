@@ -1,4 +1,6 @@
-﻿@{
+﻿@model IEnumerable<ITElectiveSSO.Models.ApplicationUser>
+
+@{
     Layout = "_AdminLayout";
     ViewData["Title"] = "User Management";
 }
@@ -9,23 +11,25 @@
     }
 
     .dark-card {
-        background-color: #101625;
+        background-color: #101625 !important;
         border-radius: 10px;
         border: none;
         color: #ffffff;
     }
 
     .dark-header {
-        background-color: #101625;
+        background-color: #101625 !important;
         border-radius: 10px;
         color: #ffffff;
         padding: 16px 24px;
     }
+
     .custom-dark-table {
         width: 100%;
         color: #ffffff;
         background-color: transparent !important;
-        border-collapse: collapse;
+        border-collapse: separate;
+        border-spacing: 0;
     }
 
         .custom-dark-table th {
@@ -117,11 +121,14 @@
 </style>
 
 <div class="container-fluid px-4 py-3">
+    <!-- Top Header Banner -->
     <div class="dark-header mb-3 shadow-sm">
         <h3 class="fw-bold mb-0">User Management</h3>
     </div>
 
+    <!-- Main Content Dark Card -->
     <div class="dark-card p-4 shadow">
+        <!-- Search & Add User Bar -->
         <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom border-secondary border-opacity-25">
             <div class="position-relative" style="width: 320px;">
                 <i class="bi bi-search search-icon-inside"></i>
@@ -132,63 +139,89 @@
             </button>
         </div>
 
+        <!-- Users Table -->
         <div class="table-responsive">
             <table class="custom-dark-table align-middle" id="usersTable" data-testid="users-table">
                 <thead>
                     <tr>
-                        <th class="ps-2">EMAIL</th>
-                        <th>CREATED DATE</th>
-                        <th>STATUS</th>
-                        <th class="text-center">ACTIVE TOGGLE</th>
-                        <th class="text-end pe-2">ACTIONS</th>
+                        <th class="ps-2" style="width: 30%;">EMAIL</th>
+                        <th style="width: 20%;">CREATED DATE</th>
+                        <th style="width: 15%;">STATUS</th>
+                        <th class="text-center" style="width: 15%;">ACTIVE TOGGLE</th>
+                        <th class="text-end pe-2" style="width: 20%;">ACTIONS</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr data-user-id="1">
-                        <td class="ps-2 fw-medium text-white user-email">example@gmail.com</td>
-                        <td>2026-08-26</td>
-                        <td><span class="badge badge-active-green status-badge">Active</span></td>
-                        <td class="text-center">
-                            <span class="me-2 fw-bold small text-light toggle-label">ON</span>
-                            <div class="form-check form-switch d-inline-block align-middle mb-0">
-                                <input class="form-check-input user-toggle-switch" type="checkbox" checked id="toggle_1" onchange="toggleUserStatus(1, this)" data-testid="toggle-user-1">
-                            </div>
-                        </td>
-                        <td class="text-end pe-2">
-                            <button class="btn btn-view-blue me-2" data-bs-toggle="modal" data-bs-target="#userDetailsModal" onclick="loadUserDetails('example@gmail.com', 'Active', 'Sales App Admin, Support Team', '2026-09-02 17:23')" data-testid="view-user-1">
-                                View
-                            </button>
-                            <button class="btn btn-delete-red" data-bs-toggle="modal" data-bs-target="#deleteUserModal" onclick="setDeleteUserTarget(1, 'example@gmail.com')" data-testid="delete-user-1">
-                                Delete
-                            </button>
-                        </td>
-                    </tr>
+                    @if (Model != null && Model.Any())
+                    {
+                        @foreach (var user in Model)
+                        {
+                            <tr data-user-id="@user.Id">
+                                <td class="ps-2 fw-medium text-white user-email">@user.Email</td>
+                                <td>@user.CreatedAt.ToString("yyyy-MM-dd")</td>
+                                <td>
+                                    @if (user.IsActive)
+                                    {
+                                        <span class="badge badge-active-green status-badge">Active</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge badge-suspended-gray status-badge">Suspended</span>
+                                    }
+                                </td>
+                                <td class="text-center">
+                                    <span class="me-2 fw-bold small @(user.IsActive ? "text-light" : "text-secondary") toggle-label">
+                                        @(user.IsActive ? "ON" : "OFF")
+                                    </span>
 
-                    <tr data-user-id="2">
-                        <td class="ps-2 fw-medium text-white user-email">example123@gmail.com</td>
-                        <td>2026-08-25</td>
-                        <td><span class="badge badge-suspended-gray status-badge">Suspended</span></td>
-                        <td class="text-center">
-                            <span class="me-2 fw-bold small text-secondary toggle-label">OFF</span>
-                            <div class="form-check form-switch d-inline-block align-middle mb-0">
-                                <input class="form-check-input user-toggle-switch" type="checkbox" id="toggle_2" onchange="toggleUserStatus(2, this)" data-testid="toggle-user-2">
-                            </div>
-                        </td>
-                        <td class="text-end pe-2">
-                            <button class="btn btn-view-blue me-2" data-bs-toggle="modal" data-bs-target="#userDetailsModal" onclick="loadUserDetails('example123@gmail.com', 'Suspended', 'None', '2026-08-25 10:15')" data-testid="view-user-2">
-                                View
-                            </button>
-                            <button class="btn btn-delete-red" data-bs-toggle="modal" data-bs-target="#deleteUserModal" onclick="setDeleteUserTarget(2, 'example123@gmail.com')" data-testid="delete-user-2">
-                                Delete
-                            </button>
-                        </td>
-                    </tr>
+                                    <form asp-area="Admin" asp-controller="UserController" asp-action="ToggleActive" asp-route-id="@user.Id" method="post" class="d-inline">
+                                        <div class="form-check form-switch d-inline-block align-middle mb-0">
+                                            <input class="form-check-input user-toggle-switch"
+                                                   type="checkbox"
+                                                   @(user.IsActive ? "checked" : "")
+                                                   id="toggle_@user.Id"
+                                                   onchange="toggleUserStatus('@user.Id', this)"
+                                                   data-testid="toggle-user-@user.Id"
+                                                   style="cursor: pointer;">
+                                        </div>
+                                    </form>
+                                </td>
+                                <td class="text-end pe-2">
+                                    <button class="btn btn-view-blue me-2"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#userDetailsModal"
+                                            data-email="@user.Email"
+                                            data-active="@user.IsActive.ToString().ToLower()"
+                                            data-created="@user.CreatedAt.ToString("yyyy-MM-dd HH:mm")"
+                                            onclick="loadUserDetails(this)"
+                                            data-testid="view-user-@user.Id">
+                                        View
+                                    </button>
+
+                                    <button class="btn btn-delete-red"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#deleteUserModal"
+                                            onclick="setDeleteUserTarget('@user.Id', '@user.Email')"
+                                            data-testid="delete-user-@user.Id">
+                                        Delete
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="5" class="text-center text-muted py-4">No users found.</td>
+                        </tr>
+                    }
                 </tbody>
             </table>
         </div>
     </div>
 </div>
 
+<!-- Render Modals directly from local folder -->
 @await Html.PartialAsync("_CreateUserModal")
 @await Html.PartialAsync("_UserDetailsModal")
 @await Html.PartialAsync("_DeleteUserModal")

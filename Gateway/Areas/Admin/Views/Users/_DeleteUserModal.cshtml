@@ -13,10 +13,6 @@
         border-radius: 4px;
     }
 
-    .modal-dark-input-error {
-        border: 2px solid #e55353 !important;
-    }
-
     .btn-modal-cancel {
         background-color: #6c757d;
         color: #ffffff;
@@ -24,10 +20,14 @@
     }
 
     .btn-modal-create {
-        background-color: #8a99ad;
+        background-color: #0088cc;
         color: #ffffff;
         border: none;
     }
+
+        .btn-modal-create:hover {
+            background-color: #0077b5;
+        }
 </style>
 
 <div class="modal fade" id="createUserModal" tabindex="-1" aria-hidden="true">
@@ -38,20 +38,35 @@
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <form id="createUserForm" onsubmit="handleCreateUserSubmit(event)">
+                @Html.AntiForgeryToken()
                 <div class="modal-body">
                     <div class="mb-3">
                         <label for="createEmail" class="form-label fw-semibold small text-light">Email Address</label>
-                        <input type="email" id="createEmail" class="form-control modal-dark-input" placeholder="user@gmail.com" required data-testid="input-email">
+                        <input type="email" id="createEmail" name="Email" class="form-control modal-dark-input" placeholder="user@gmail.com" required data-testid="input-email">
+<<<<<<<< HEAD:Gateway/Areas/Admin/Views/Users/_DeleteUserModal.cshtml
+========
+                        <!-- Email specific error below input -->
+>>>>>>>> staging:Gateway/Areas/Admin/Views/Users/_CreateUserModal.cshtml
+                        <div id="emailError" class="text-danger small mt-1 d-none" data-testid="email-error"></div>
                     </div>
                     <div class="mb-3">
                         <label for="createPassword" class="form-label fw-semibold small text-light">Temporary Password</label>
-                        <input type="password" id="createPassword" class="form-control modal-dark-input" required minlength="6" data-testid="input-password">
+                        <input type="password" id="createPassword" name="Password" class="form-control modal-dark-input" required minlength="6" data-testid="input-password">
+<<<<<<<< HEAD:Gateway/Areas/Admin/Views/Users/_DeleteUserModal.cshtml
+========
+                        <!-- Password specific error below input -->
+>>>>>>>> staging:Gateway/Areas/Admin/Views/Users/_CreateUserModal.cshtml
+                        <div id="passwordError" class="text-danger small mt-1 d-none" data-testid="password-error"></div>
                     </div>
                     <div class="mb-3">
                         <label for="createConfirmPassword" class="form-label fw-semibold small text-light">Confirm Password</label>
-                        <input type="password" id="createConfirmPassword" class="form-control modal-dark-input" required data-testid="input-confirm-password">
-                        <div id="confirmPasswordError" class="text-danger small mt-2 d-none" data-testid="password-mismatch-error">
-                            Password do not match!
+                        <input type="password" id="createConfirmPassword" name="ConfirmPassword" class="form-control modal-dark-input" required data-testid="input-confirm-password">
+<<<<<<<< HEAD:Gateway/Areas/Admin/Views/Users/_DeleteUserModal.cshtml
+========
+                        <!-- Password mismatch error below input -->
+>>>>>>>> staging:Gateway/Areas/Admin/Views/Users/_CreateUserModal.cshtml
+                        <div id="confirmPasswordError" class="text-danger small mt-1 d-none" data-testid="password-mismatch-error">
+                            Passwords do not match!
                         </div>
                     </div>
                 </div>
