@@ -16,9 +16,9 @@ namespace SSO_Gateway.Controllers
             return View();
         }
 
-        public IActionResult Users() => View();
-        public IActionResult Apps() => View("~/Areas/Admin/Views/TenantApps/Index.cshtml");
-        public IActionResult Groups() => View();
-        public IActionResult AuditLogs() => View();
+        public IActionResult Users() => RedirectToAction("Index", "Users", new { area = "Admin" });
+        public IActionResult Apps() => RedirectToAction("Index", "TenantApps", new { area = "Admin" });
+        public IActionResult Groups() => RedirectToAction("Index", "Groups", new { area = "Admin" });
+        public IActionResult AuditLogs() => RedirectToAction("Index", "AuditLogs", new { area = "Admin" });
     }
 }
