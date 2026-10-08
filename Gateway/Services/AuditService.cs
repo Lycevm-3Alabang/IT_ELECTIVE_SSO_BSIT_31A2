@@ -45,5 +45,20 @@ namespace Gateway.Services
             _context.AuditLogs.Add(log);
             await _context.SaveChangesAsync();
         }
+
+        public async Task LogLogoutAsync(string? userId, string email, string? ipAddress = null)
+        {
+            var log = new AuditLog
+            {
+                UserId = userId,
+                Action = "LogoutSuccess",
+                Details = $"User '{email}' logged out successfully.",
+                IpAddress = ipAddress ?? "127.0.0.1",
+                Timestamp = DateTime.UtcNow
+            };
+
+            _context.AuditLogs.Add(log);
+            await _context.SaveChangesAsync();
+        }
     }
 }
