@@ -18,10 +18,26 @@ namespace Gateway.Areas.Admin.Controllers
         }
 
         // GET /Admin/Groups
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string? searchString)
         {
-            var groups = await _context.Groups
+            // Clear any automatically generated model errors for the optional search input
+            ModelState.Remove(nameof(searchString));
+
+            ViewBag.SearchString = searchString;
+
+            var groupsQuery = _context.Groups
                 .Include(g => g.TenantApp)
+                .AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(searchString))
+            {
+                var trimmedSearch = searchString.Trim();
+                groupsQuery = groupsQuery.Where(g =>
+                    g.Name.Contains(trimmedSearch) ||
+                    (g.TenantApp != null && g.TenantApp.Name.Contains(trimmedSearch)));
+            }
+
+            var groups = await groupsQuery
                 .OrderBy(g => g.TenantApp.Name)
                 .ThenBy(g => g.PowerLevel)
                 .ToListAsync();
