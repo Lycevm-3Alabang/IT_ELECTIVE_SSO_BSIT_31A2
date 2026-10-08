@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Cryptography;
 
 namespace Gateway.Areas.Admin.Controllers
 {
@@ -26,7 +27,9 @@ namespace Gateway.Areas.Admin.Controllers
         {
             const int pageSize = 10;
 
-            var query = _userManager.Users.OrderBy(u => u.Email);
+            var query = _userManager.Users
+                .OrderByDescending(u => u.CreatedAt)
+                .ThenBy(u => u.Email);
 
             var totalUsers = await query.CountAsync();
             var totalPages = (int)Math.Ceiling(totalUsers / (double)pageSize);
@@ -50,23 +53,49 @@ namespace Gateway.Areas.Admin.Controllers
 
         // POST: /Admin/Users/Create
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(
-            string Email,
-            string Password,
-            string ConfirmPassword)
+            string? Email,
+            string? Password,
+            string? ConfirmPassword)
         {
-            if (Password != ConfirmPassword)
+            bool isAjax = Request.Headers["X-Requested-With"] == "XMLHttpRequest";
+
+            // AJAX (modal) gets JSON with the field the error belongs to; plain form post gets the view back.
+            IActionResult Fail(string? field, string message)
             {
-                ModelState.AddModelError("", "Passwords do not match.");
+                if (isAjax)
+                {
+                    return BadRequest(new { success = false, field, message });
+                }
+
+                ModelState.AddModelError(string.Empty, message);
                 return View();
             }
 
+            Email = Email?.Trim();
+
+            if (string.IsNullOrWhiteSpace(Email))
+            {
+                return Fail("email", "Email is required.");
+            }
+
+            if (string.IsNullOrEmpty(Password))
+            {
+                return Fail("password", "Password is required.");
+            }
+
+            if (Password != ConfirmPassword)
+            {
+                return Fail("confirmPassword", "Passwords do not match!");
+            }
+
+            // Duplicate check (FindByEmailAsync is case-insensitive)
             var existingUser = await _userManager.FindByEmailAsync(Email);
 
             if (existingUser != null)
             {
-                ModelState.AddModelError("", "Email already exists.");
-                return View();
+                return Fail("email", "A user with this email already exists.");
             }
 
             var user = new ApplicationUser
@@ -81,15 +110,18 @@ namespace Gateway.Areas.Admin.Controllers
 
             if (result.Succeeded)
             {
-                return RedirectToAction(nameof(Index));
+                return isAjax
+                    ? Json(new { success = true })
+                    : RedirectToAction(nameof(Index));
             }
 
-            foreach (var error in result.Errors)
-            {
-                ModelState.AddModelError("", error.Description);
-            }
+            var error = result.Errors.First();
+            string? errorField =
+                error.Code.StartsWith("Password") ? "password" :
+                (error.Code.Contains("Email") || error.Code.Contains("UserName")) ? "email" :
+                null;
 
-            return View();
+            return Fail(errorField, error.Description);
         }
 
         // GET: /Admin/Users/Details/{id}
@@ -173,6 +205,10 @@ namespace Gateway.Areas.Admin.Controllers
                 return BadRequest(new { success = false, message = errors });
             }
 
+            // Clear any lockout from earlier failed attempts so the temp password works right away
+            await _userManager.SetLockoutEndDateAsync(user, null);
+            await _userManager.ResetAccessFailedCountAsync(user);
+
             _context.AuditLogs.Add(new AuditLog
             {
                 UserId = user.Id,
@@ -191,29 +227,29 @@ namespace Gateway.Areas.Admin.Controllers
             const string lowercase = "abcdefghijkmnpqrstuvwxyz";
             const string uppercase = "ABCDEFGHJKLMNPQRSTUVWXYZ";
             const string digits = "23456789";
+            const string allChars = lowercase + uppercase + digits;
 
-            var random = Random.Shared;
-
-            var guaranteedChars = new[]
+            var passwordChars = new List<char>
             {
-                lowercase[random.Next(lowercase.Length)],
-                uppercase[random.Next(uppercase.Length)],
-                digits[random.Next(digits.Length)],
-                digits[random.Next(digits.Length)]
+                lowercase[RandomNumberGenerator.GetInt32(lowercase.Length)],
+                uppercase[RandomNumberGenerator.GetInt32(uppercase.Length)],
+                digits[RandomNumberGenerator.GetInt32(digits.Length)],
+                digits[RandomNumberGenerator.GetInt32(digits.Length)]
             };
 
-            var allChars = lowercase + uppercase + digits;
-            var passwordChars = guaranteedChars
-                .Concat(Enumerable.Range(0, 6).Select(_ => allChars[random.Next(allChars.Length)]))
-                .ToArray();
-
-            for (int i = passwordChars.Length - 1; i > 0; i--)
+            for (int i = 0; i < 6; i++)
             {
-                int j = random.Next(i + 1);
+                passwordChars.Add(allChars[RandomNumberGenerator.GetInt32(allChars.Length)]);
+            }
+
+            // Fisher-Yates shuffle
+            for (int i = passwordChars.Count - 1; i > 0; i--)
+            {
+                int j = RandomNumberGenerator.GetInt32(i + 1);
                 (passwordChars[i], passwordChars[j]) = (passwordChars[j], passwordChars[i]);
             }
 
-            return new string(passwordChars);
+            return new string(passwordChars.ToArray());
         }
     }
 }
