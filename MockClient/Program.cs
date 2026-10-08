@@ -51,7 +51,13 @@ builder.Services.AddAuthorization();
 var app = builder.Build();
 
 app.UseDefaultFiles();
-app.UseStaticFiles();
+app.UseStaticFiles(new StaticFileOptions
+{
+    OnPrepareResponse = ctx =>
+    {
+        ctx.Context.Response.Headers["Cache-Control"] = "no-store, no-cache";
+    }
+});
 
 app.UseAuthentication();
 app.UseAuthorization();
@@ -74,13 +80,20 @@ app.MapGet("/api/userinfo", (ClaimsPrincipal user) =>
     var groups = (user.FindFirst("groups")?.Value ?? string.Empty)
         .Split(',', StringSplitOptions.RemoveEmptyEntries);
 
+    var iat = user.FindFirst("iat")?.Value;
+    var exp = user.FindFirst("exp")?.Value;
+
     return Results.Ok(new
     {
         sub = user.FindFirst("sub")?.Value,
         email = user.FindFirst("email")?.Value,
         tenantApp = user.FindFirst("tenant_app")?.Value,
         groups,
-        levels
+        levels,
+        iat = long.TryParse(iat, out var iatSeconds) ? iatSeconds : (long?)null,
+        exp = long.TryParse(exp, out var expSeconds) ? expSeconds : (long?)null,
+        issuedAtUtc = long.TryParse(iat, out var i) ? DateTimeOffset.FromUnixTimeSeconds(i) : (DateTimeOffset?)null,
+        expiresAtUtc = long.TryParse(exp, out var e) ? DateTimeOffset.FromUnixTimeSeconds(e) : (DateTimeOffset?)null
     });
 }).RequireAuthorization();
 
