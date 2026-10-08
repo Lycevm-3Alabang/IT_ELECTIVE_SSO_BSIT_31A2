@@ -14,6 +14,10 @@ function showLoggedOut() {
     loggedOut.classList.remove('hidden');
 }
 
+function formatTime(iso) {
+    return iso ? new Date(iso).toLocaleString() : '(not set)';
+}
+
 async function loadUserInfo() {
     const token = sessionStorage.getItem(TOKEN_KEY);
     if (!token) {
@@ -48,6 +52,8 @@ async function loadUserInfo() {
     document.getElementById('tenant-app').textContent = info.tenantApp;
     document.getElementById('groups').textContent = info.groups.length ? info.groups.join(', ') : '(none)';
     document.getElementById('levels').textContent = JSON.stringify(info.levels, null, 2);
+    document.getElementById('iat').textContent = formatTime(info.issuedAtUtc);
+    document.getElementById('exp').textContent = formatTime(info.expiresAtUtc);
 
     loggedOut.classList.add('hidden');
     loggedIn.classList.remove('hidden');
