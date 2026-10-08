@@ -70,18 +70,18 @@ namespace Gateway.Areas.Admin.Controllers
         // POST /Admin/Users/{userId}/Groups
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Assign(string userId, AssignGroupViewModel model)
+        public async Task<IActionResult> Assign(string userId, [FromBody] AssignGroupViewModel model)
         {
             var user = await _userManager.FindByIdAsync(userId);
             if (user == null)
             {
-                return NotFound();
+                return NotFound(new { message = "User not found." });
             }
 
             var group = await _context.Groups.FindAsync(model.GroupId);
             if (group == null)
             {
-                return NotFound();
+                return NotFound(new { message = "Group not found." });
             }
 
             var alreadyAssigned = await _context.UserGroups
@@ -89,8 +89,7 @@ namespace Gateway.Areas.Admin.Controllers
 
             if (alreadyAssigned)
             {
-                TempData["ErrorMessage"] = "User is already assigned to this group.";
-                return RedirectToAction("Details", "Users", new { id = userId });
+                return Conflict(new { message = "User is already assigned to this group." });
             }
 
             _context.UserGroups.Add(new UserGroup
@@ -101,8 +100,7 @@ namespace Gateway.Areas.Admin.Controllers
 
             await _context.SaveChangesAsync();
 
-            TempData["SuccessMessage"] = $"User assigned to group '{group.Name}'.";
-            return RedirectToAction("Details", "Users", new { id = userId });
+            return Ok(new { success = true, message = $"User assigned to group '{group.Name}'." });
         }
 
         [HttpDelete("{groupId}")]
