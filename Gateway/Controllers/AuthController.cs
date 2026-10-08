@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.WebUtilities;
 
 namespace Gateway.Controllers
 {
-    [AllowAnonymous]
     public class AuthController : Controller
     {
         private const string InvalidCredentialsMessage = "Invalid email or password.";
@@ -36,31 +35,52 @@ namespace Gateway.Controllers
         }
 
         [HttpGet]
+        [AllowAnonymous]
         public async Task<IActionResult> Login(string? returnUrl)
         {
+            // 1. If empty or attempting to redirect to Auth actions, default to Admin dashboard
+            if (string.IsNullOrWhiteSpace(returnUrl) || returnUrl.StartsWith("/Auth", StringComparison.OrdinalIgnoreCase))
+            {
+                return View(new LoginViewModel { ReturnUrl = "/Admin/Index", AppName = "SSO Portal" });
+            }
 
+            // 2. Allow valid internal local URLs (e.g., /Admin/Index)
+            if (Url.IsLocalUrl(returnUrl))
+            {
+                return View(new LoginViewModel { ReturnUrl = returnUrl, AppName = "SSO Portal" });
+            }
+
+            // 3. Validate external tenant applications
             var app = await _returnUrlValidator.ValidateAsync(returnUrl, GetClientIp());
-
             if (app == null)
             {
                 return View("UnapprovedApp");
             }
+
             return View(new LoginViewModel { ReturnUrl = returnUrl, AppName = app.Name });
         }
 
-
         [HttpPost]
+        [AllowAnonymous]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Login(LoginViewModel model)
         {
             var ip = GetClientIp();
+            TenantApp? app = null;
 
-            var app = await _returnUrlValidator.ValidateAsync(model.ReturnUrl, ip);
-            if (app == null)
+            if (!string.IsNullOrWhiteSpace(model.ReturnUrl) && !model.ReturnUrl.StartsWith("/"))
             {
-                return View("UnapprovedApp");
+                app = await _returnUrlValidator.ValidateAsync(model.ReturnUrl, ip);
+                if (app == null)
+                {
+                    return View("UnapprovedApp");
+                }
+                model.AppName = app.Name;
             }
-            model.AppName = app.Name;
+            else
+            {
+                model.AppName = "SSO Portal";
+            }
 
             if (!ModelState.IsValid)
             {
@@ -71,7 +91,6 @@ namespace Gateway.Controllers
             if (user == null)
             {
                 await _auditService.LogLoginAsync(null, model.Email, false, "Unknown email", ip);
-
                 ModelState.AddModelError(string.Empty, InvalidCredentialsMessage);
                 return View(model);
             }
@@ -99,14 +118,61 @@ namespace Gateway.Controllers
                 return View(model);
             }
 
-            var token = await _jwtTokenService.CreateTokenAsync(user, app);
-
             user.LastLoginAt = DateTime.UtcNow;
             await _userManager.UpdateAsync(user);
 
+            // Writes authentication cookie to the browser so User claims persist
+            await _signInManager.SignInAsync(user, isPersistent: false);
+
             await _auditService.LogLoginAsync(user.Id, user.Email!, true, null, ip);
 
-            return Redirect(QueryHelpers.AddQueryString(app.ReturnUrl, "token", token));
+            // External tenant application redirect
+            if (app != null)
+            {
+                var token = await _jwtTokenService.CreateTokenAsync(user, app);
+                return Redirect(QueryHelpers.AddQueryString(app.ReturnUrl, "token", token));
+            }
+
+            // Internal root controller redirect
+            if (string.IsNullOrWhiteSpace(model.ReturnUrl) || model.ReturnUrl.StartsWith("/Admin") || model.ReturnUrl.StartsWith("/Auth"))
+            {
+                return RedirectToAction("Index", "Admin");
+            }
+
+            return LocalRedirect(model.ReturnUrl);
+        }
+
+        [HttpGet]
+        [HttpPost]
+        [Authorize]
+        public async Task<IActionResult> Logout()
+        {
+            // 1. Fetch user directly via UserManager
+            var user = await _userManager.GetUserAsync(User);
+
+            // 2. Extract UserId with fallbacks
+            var userId = user?.Id
+                         ?? _userManager.GetUserId(User)
+                         ?? User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+
+            // 3. Extract Email with comprehensive claim fallbacks
+            var email = user?.Email
+                        ?? User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value
+                        ?? User.Identity?.Name
+                        ?? User.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value
+                        ?? User.FindFirst("email")?.Value
+                        ?? "Unknown";
+
+            var ipAddress = GetClientIp() ?? "127.0.0.1";
+
+            // Record audit log entry
+            await _auditService.LogLogoutAsync(userId, email, ipAddress);
+
+            // Sign out user session
+            await _signInManager.SignOutAsync();
+
+            // Redirect back to Login with no returnUrl attached
+            return RedirectToAction(nameof(Login));
         }
 
         private string? GetClientIp() => HttpContext?.Connection?.RemoteIpAddress?.ToString();
