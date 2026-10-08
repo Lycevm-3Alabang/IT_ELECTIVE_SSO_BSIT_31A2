@@ -198,18 +198,126 @@ function assignGroup() {
         .catch(err => console.error("Error assigning group:", err));
 }
 
-// Password Generator & Reset Flow
-function generateTempPassword() {
-    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*";
-    let password = "Tmp#";
-    for (let i = 0; i < 8; i++) {
-        password += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    return password;
+// -------------------------------------------------------------
+// Shared helper
+// -------------------------------------------------------------
+function getAntiForgeryToken(scope) {
+    const input = (scope || document).querySelector('input[name="__RequestVerificationToken"]');
+    return input ? input.value : '';
 }
 
+// -------------------------------------------------------------
+// Create User (modal)
+// -------------------------------------------------------------
+function clearCreateUserErrors() {
+    ['emailError', 'passwordError', 'confirmPasswordError', 'createFormError'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.classList.add('d-none');
+    });
+}
+
+function showCreateUserError(field, message) {
+    const targetId = {
+        email: 'emailError',
+        password: 'passwordError',
+        confirmPassword: 'confirmPasswordError'
+    }[field] || 'createFormError';
+
+    const el = document.getElementById(targetId);
+    if (!el) return;
+
+    el.textContent = message;
+    el.classList.remove('d-none');
+}
+
+async function handleCreateUserSubmit(event) {
+    event.preventDefault();
+
+    const form = event.target;
+    const email = form.querySelector('#createEmail').value.trim();
+    const password = form.querySelector('#createPassword').value;
+    const confirmPassword = form.querySelector('#createConfirmPassword').value;
+    const submitBtn = form.querySelector('[type="submit"]');
+
+    clearCreateUserErrors();
+
+    if (!email) {
+        showCreateUserError('email', 'Email is required.');
+        return;
+    }
+
+    if (password.length < 6) {
+        showCreateUserError('password', 'Password must be at least 6 characters.');
+        return;
+    }
+
+    if (password !== confirmPassword) {
+        showCreateUserError('confirmPassword', 'Passwords do not match!');
+        return;
+    }
+
+    if (submitBtn) submitBtn.disabled = true;
+
+    try {
+        const response = await fetch('/Admin/Users/Create', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+                'X-Requested-With': 'XMLHttpRequest',
+                'RequestVerificationToken': getAntiForgeryToken(form)
+            },
+            body: new URLSearchParams({
+                Email: email,
+                Password: password,
+                ConfirmPassword: confirmPassword
+            })
+        });
+
+        let data = {};
+        try { data = await response.json(); } catch { /* non-JSON response */ }
+
+        if (response.ok && data.success) {
+            // Back to page 1 (newest users first) so the new user is visible
+            window.location.href = '/Admin/Users';
+            return;
+        }
+
+        showCreateUserError(data.field, data.message || 'Failed to create user.');
+    } catch (err) {
+        console.error('Error creating user:', err);
+        showCreateUserError(null, 'Network error. Please try again.');
+    } finally {
+        if (submitBtn) submitBtn.disabled = false;
+    }
+}
+
+// Reset the Create User form every time the modal is closed
+document.addEventListener('DOMContentLoaded', () => {
+    const createModalEl = document.getElementById('createUserModal');
+    if (createModalEl) {
+        createModalEl.addEventListener('hidden.bs.modal', () => {
+            const form = document.getElementById('createUserForm');
+            if (form) form.reset();
+            clearCreateUserErrors();
+        });
+    }
+});
+
+// -------------------------------------------------------------
+// Delete User (modal)
+// -------------------------------------------------------------
+function setDeleteUserTarget(userId, email) {
+    const idInput = document.getElementById('deleteUserId');
+    const emailLabel = document.getElementById('deleteUserEmail');
+    if (idInput) idInput.value = userId;
+    if (emailLabel) emailLabel.textContent = email;
+}
+
+// -------------------------------------------------------------
+// Password Reset Flow (uses the REAL temporary password from the server)
+// -------------------------------------------------------------
 function copyTempPasswordToClipboard() {
-    const tempPassText = document.getElementById('tempPasswordDisplay')?.innerText;
+    const tempPassText = document.getElementById('tempPasswordDisplay')?.textContent.trim();
     if (tempPassText) {
         navigator.clipboard.writeText(tempPassText).then(() => {
             alert('Temporary password copied to clipboard!');
@@ -220,33 +328,38 @@ function copyTempPasswordToClipboard() {
 }
 
 async function triggerPasswordReset(userId) {
-    try {
-        const targetId = userId || currentUserId;
-        const tokenInput = document.querySelector('input[name="__RequestVerificationToken"]');
-        const token = tokenInput ? tokenInput.value : '';
+    const targetId = userId || currentUserId;
+    if (!targetId) return;
 
-        await fetch(`/Admin/Users/ResetPassword/${targetId}`, {
+    try {
+        const response = await fetch(`/Admin/Users/ResetPassword/${targetId}`, {
             method: 'POST',
             headers: {
                 'X-Requested-With': 'XMLHttpRequest',
-                'RequestVerificationToken': token
+                'RequestVerificationToken': getAntiForgeryToken()
             }
-        }).catch(() => { });
+        });
 
-        const newTempPassword = generateTempPassword();
+        let data = {};
+        try { data = await response.json(); } catch { /* non-JSON response */ }
+
+        if (!response.ok || !data.success || !data.tempPassword) {
+            alert(data.message || 'Failed to reset password.');
+            return;
+        }
 
         const tempDisplay = document.getElementById('tempPasswordDisplay');
-        if (tempDisplay) tempDisplay.innerText = newTempPassword;
+        if (tempDisplay) tempDisplay.textContent = data.tempPassword;
 
         const tempSection = document.getElementById('tempPasswordSection');
         if (tempSection) tempSection.classList.remove('d-none');
 
-        let successModalEl = document.getElementById('resetSuccessModal');
+        const successModalEl = document.getElementById('resetSuccessModal');
         if (successModalEl) {
-            let modalInstance = new bootstrap.Modal(successModalEl);
-            modalInstance.show();
+            bootstrap.Modal.getOrCreateInstance(successModalEl).show();
         }
     } catch (err) {
-        console.error("Error triggering password reset:", err);
+        console.error('Error triggering password reset:', err);
+        alert('Network error. Please try again.');
     }
 }
