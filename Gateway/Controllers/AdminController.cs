@@ -1,17 +1,37 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using ITELECTIVE_SSO.Data;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace SSO_Gateway.Controllers
 {
     public class AdminController : Controller
     {
-        public IActionResult Index()
-        {
-            ViewBag.HasData = false;
+        private readonly SsoDbContext _context;
 
-            ViewBag.TotalUsers = 0;
-            ViewBag.ActiveApps = 0;
-            ViewBag.AssignedGroups = 0;
-            ViewBag.AuditEvents = 0;
+        public AdminController(SsoDbContext context)
+        {
+            _context = context;
+        }
+
+        // GET /Admin  (dashboard: live summary stats + latest audit events)
+        public async Task<IActionResult> Index()
+        {
+            ViewBag.TotalUsers = await _context.Users.CountAsync();
+            ViewBag.ActiveApps = await _context.TenantApps.CountAsync(a => a.IsActive);
+            ViewBag.AssignedGroups = await _context.UserGroups
+                .Select(ug => ug.GroupId)
+                .Distinct()
+                .CountAsync();
+            ViewBag.AuditEvents = await _context.AuditLogs.CountAsync();
+
+            var recentLogs = await _context.AuditLogs
+                .Include(a => a.User)
+                .OrderByDescending(a => a.Timestamp)
+                .Take(10)
+                .ToListAsync();
+
+            ViewBag.RecentLogs = recentLogs;
+            ViewBag.HasData = recentLogs.Count > 0;
 
             return View();
         }
