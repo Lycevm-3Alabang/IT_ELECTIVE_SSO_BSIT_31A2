@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc.Testing;
-using Microsoft.VisualStudio.TestPlatform.TestHost;
 using System.Net;
 using System.Net.Http;
 using Xunit;
@@ -7,11 +6,11 @@ using Xunit;
 namespace Gateway.Tests
 {
     // Write UI test: error states display correctly - MANZANO
-    public class LoginErrorStateTests : IClassFixture<WebApplicationFactory<Program>>
+    public class LoginErrorStateTests : IClassFixture<SsoWebApplicationFactory>
     {
-        private readonly WebApplicationFactory<Program> _factory;
+        private readonly SsoWebApplicationFactory _factory;
 
-        public LoginErrorStateTests(WebApplicationFactory<Program> factory)
+        public LoginErrorStateTests(SsoWebApplicationFactory factory)
         {
             _factory = factory;
         }
@@ -31,7 +30,7 @@ namespace Gateway.Tests
         public async Task PostLogin_WithEmptyFields_RedisplaysFormWithValidationErrors()
         {
             var client = _factory.CreateClient();
-            var getResponse = await client.GetAsync("/Auth/Login");
+            var getResponse = await client.GetAsync(SsoWebApplicationFactory.LoginUrl);
             var pageHtml = await getResponse.Content.ReadAsStringAsync();
             var token = ExtractAntiForgeryToken(pageHtml);
 
@@ -39,6 +38,7 @@ namespace Gateway.Tests
             {
                 ["Email"] = "",
                 ["Password"] = "",
+                ["ReturnUrl"] = SsoWebApplicationFactory.ApprovedReturnUrl,
                 ["__RequestVerificationToken"] = token
             };
 
@@ -53,7 +53,7 @@ namespace Gateway.Tests
         public async Task PostLogin_WithInvalidEmailFormat_ShowsFieldError()
         {
             var client = _factory.CreateClient();
-            var getResponse = await client.GetAsync("/Auth/Login");
+            var getResponse = await client.GetAsync(SsoWebApplicationFactory.LoginUrl);
             var pageHtml = await getResponse.Content.ReadAsStringAsync();
             var token = ExtractAntiForgeryToken(pageHtml);
 
@@ -61,6 +61,7 @@ namespace Gateway.Tests
             {
                 ["Email"] = "not-an-email",
                 ["Password"] = "somepassword",
+                ["ReturnUrl"] = SsoWebApplicationFactory.ApprovedReturnUrl,
                 ["__RequestVerificationToken"] = token
             };
 

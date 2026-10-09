@@ -1,16 +1,15 @@
 ﻿using Microsoft.AspNetCore.Mvc.Testing;
-using Microsoft.VisualStudio.TestPlatform.TestHost;
 using System.Net;
 using Xunit;
 
 namespace Gateway.Tests
 {
     // Write UI test: login flow - CABARDO
-    public class LoginFlowTests : IClassFixture<WebApplicationFactory<Program>>
+    public class LoginFlowTests : IClassFixture<SsoWebApplicationFactory>
     {
-        private readonly WebApplicationFactory<Program> _factory;
+        private readonly SsoWebApplicationFactory _factory;
 
-        public LoginFlowTests(WebApplicationFactory<Program> factory)
+        public LoginFlowTests(SsoWebApplicationFactory factory)
         {
             _factory = factory;
         }
@@ -19,7 +18,7 @@ namespace Gateway.Tests
         public async Task LoginPage_Returns200_AndRendersExpectedTitle()
         {
             var client = _factory.CreateClient();
-            var response = await client.GetAsync("/Auth/Login");
+            var response = await client.GetAsync(SsoWebApplicationFactory.LoginUrl);
             var html = await response.Content.ReadAsStringAsync();
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -31,7 +30,7 @@ namespace Gateway.Tests
         public async Task LoginPage_ContainsEmailAndPasswordFields()
         {
             var client = _factory.CreateClient();
-            var html = await client.GetStringAsync("/Auth/Login");
+            var html = await client.GetStringAsync(SsoWebApplicationFactory.LoginUrl);
 
             Assert.Contains("id=\"Email\"", html);
             Assert.Contains("id=\"Password\"", html);
@@ -42,7 +41,7 @@ namespace Gateway.Tests
         public async Task LoginPage_DoesNotContainRegistrationLink()
         {
             var client = _factory.CreateClient();
-            var html = await client.GetStringAsync("/Auth/Login");
+            var html = await client.GetStringAsync(SsoWebApplicationFactory.LoginUrl);
 
             Assert.DoesNotContain("Register", html, StringComparison.OrdinalIgnoreCase);
             Assert.DoesNotContain("Sign up", html, StringComparison.OrdinalIgnoreCase);
@@ -52,7 +51,7 @@ namespace Gateway.Tests
         public async Task LoginPage_FieldsHaveAccessibleLabelsAndAriaAttributes()
         {
             var client = _factory.CreateClient();
-            var html = await client.GetStringAsync("/Auth/Login");
+            var html = await client.GetStringAsync(SsoWebApplicationFactory.LoginUrl);
 
             Assert.Contains("for=\"Email\"", html);
             Assert.Contains("for=\"Password\"", html);

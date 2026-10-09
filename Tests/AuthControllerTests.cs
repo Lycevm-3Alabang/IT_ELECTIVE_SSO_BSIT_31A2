@@ -4,6 +4,7 @@ using Gateway.Models;
 using Gateway.Services;
 using ITElectiveSSO.Models;
 using ITELECTIVE_SSO.Data;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -24,6 +25,13 @@ namespace Tests
             var services = new ServiceCollection();
 
             services.AddLogging();
+
+            // SignInManager throws "HttpContext must not be null." when there is no web request,
+            // so give it a fake one for the unit tests
+            services.AddSingleton<IHttpContextAccessor>(sp => new HttpContextAccessor
+            {
+                HttpContext = new DefaultHttpContext { RequestServices = sp }
+            });
 
             services.AddSingleton<IConfiguration>(new ConfigurationBuilder()
                 .AddInMemoryCollection(new Dictionary<string, string?>
