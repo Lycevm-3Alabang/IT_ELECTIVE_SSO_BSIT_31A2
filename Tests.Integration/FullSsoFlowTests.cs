@@ -10,6 +10,7 @@ using Gateway.Models;
 using Gateway.Services;
 using ITElectiveSSO.Models;
 using ITELECTIVE_SSO.Data;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -70,8 +71,14 @@ namespace Tests.Integration
             services.AddScoped<IAuditService, AuditService>();
             services.AddScoped<IJwtTokenService, JwtTokenService>();
             services.AddTransient<AuthController>();
+            services.AddHttpContextAccessor();
 
-            return services.BuildServiceProvider();
+            var provider = services.BuildServiceProvider();
+
+            provider.GetRequiredService<IHttpContextAccessor>().HttpContext =
+                new DefaultHttpContext { RequestServices = provider };
+
+            return provider;
         }
 
         private static async Task SeedGatewayAsync(IServiceProvider provider)
@@ -109,6 +116,11 @@ namespace Tests.Integration
             var provider = BuildGatewayProvider(Guid.NewGuid().ToString());
             await SeedGatewayAsync(provider);
             var controller = provider.GetRequiredService<AuthController>();
+
+            controller.ControllerContext = new ControllerContext
+            {
+                HttpContext = provider.GetRequiredService<IHttpContextAccessor>().HttpContext!
+            };
 
             var result = await controller.Login(new LoginViewModel { Email = Email, Password = Password, ReturnUrl = CallbackUrl });
 
