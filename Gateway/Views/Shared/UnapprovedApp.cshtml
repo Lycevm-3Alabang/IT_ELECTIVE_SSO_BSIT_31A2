@@ -1,9 +1,38 @@
 ﻿@{
-    ViewData["Title"] = "Unapproved External App";
+    Layout = null;  
 }
 
-<div class="text-center" style="margin-top: 4rem;">
-    <h1 class="text-danger">Unapproved External App</h1>
-    <p>The application you're trying to access has not been registered with this SSO system, or the return URL doesn't match what's on file.</p>
-    <p>If you believe this is a mistake, please contact your administrator.</p>
-</div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Unapproved External App - IT ELECTIVE SSO</title>
+    <link rel="icon" href="~/favicon.ico" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" />
+    <link rel="stylesheet" href="~/css/sso-login.css" asp-append-version="true" />
+</head>
+<body>
+    <main class="sso-page">
+        <section class="sso-card" aria-labelledby="sso-heading">
+
+            <div class="sso-brand">
+                <img src="~/images/loalogo.png" alt="" class="sso-logo" />
+                <div>
+                    <h1 class="sso-title" id="sso-heading">IT ELECTIVE - SSO</h1>
+                    <p class="sso-subtitle">Single sign-on gateway</p>
+                </div>
+            </div>
+
+            <div class="sso-alert" role="alert">
+                <strong>Unapproved External App</strong>
+                This application isn't registered with the SSO system, or its return URL doesn't match what's on file.
+            </div>
+
+            <p class="sso-message">Go back to the app you came from and try again. If you think this is a mistake, contact your administrator.</p>
+        </section>
+    </main>
+</body>
+</html>

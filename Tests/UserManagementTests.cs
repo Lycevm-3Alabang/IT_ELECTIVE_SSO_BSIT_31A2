@@ -200,6 +200,43 @@ namespace Tests
             Assert.Contains("audittest@example.com", log!.Details);
         }
 
+        [Fact]
+        public async Task ResetPassword_Post_SetsNewWorkingPassword()
+        {
+            // arrange
+            var (userManager, context) = BuildServices(Guid.NewGuid().ToString());
+            var controller = new UsersController(userManager, context, new AuditService(context))
+            {
+                ControllerContext = new ControllerContext
+                {
+                    HttpContext = new DefaultHttpContext()
+                }
+            };
+
+            var user = new ApplicationUser
+            {
+                UserName = "resettest@example.com",
+                Email = "resettest@example.com",
+                IsActive = true
+            };
+            await userManager.CreateAsync(user, "OldPassword1");
+
+            // act
+            var result = await controller.ResetPassword(user.Id);
+
+            // assert: the action returned the temporary password
+            var json = Assert.IsType<JsonResult>(result);
+            var tempPassword = json.Value!.GetType().GetProperty("tempPassword")!.GetValue(json.Value) as string;
+            Assert.False(string.IsNullOrWhiteSpace(tempPassword));
+            Assert.NotEqual("OldPassword1", tempPassword);
+
+            // assert: the temporary password works and the old one no longer does
+            var updatedUser = await userManager.FindByIdAsync(user.Id);
+            Assert.NotNull(updatedUser);
+            Assert.True(await userManager.CheckPasswordAsync(updatedUser!, tempPassword!));
+            Assert.False(await userManager.CheckPasswordAsync(updatedUser!, "OldPassword1"));
+        }
+
 
 
         private static UsersController BuildController(UserManagerBundle b)
