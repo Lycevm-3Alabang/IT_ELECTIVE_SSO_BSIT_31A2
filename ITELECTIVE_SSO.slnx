@@ -1,4 +1,44 @@
 <Solution>
+  <Folder Name="/Docs/" />
+  <Folder Name="/Docs/Examples/">
+    <File Path="Architecture.md" />
+    <File Path="Error-codes.md" />
+    <File Path="Faq.md" />
+    <File Path="Integration-aspnet-mvc.md" />
+    <File Path="Integration-node.md" />
+    <File Path="Integration-php.md" />
+    <File Path="Integration-react.md" />
+    <File Path="jwt-claims.md" />
+    <File Path="READmeQA.md" />
+  </Folder>
+  <Folder Name="/Docs/Examples/aspnet-mvc/">
+    <File Path="appsettings.json" />
+    <File Path="Program.cs" />
+  </Folder>
+  <Folder Name="/Docs/Examples/Controllers/">
+    <File Path="AccountControllers.cs" />
+    <File Path="DashboardController.cs" />
+  </Folder>
+  <Folder Name="/Docs/Examples/node/">
+    <File Path=".env.example" />
+    <File Path="app.js" />
+    <File Path="package.json" />
+  </Folder>
+  <Folder Name="/Docs/Examples/php/">
+    <File Path="Callback.php" />
+    <File Path="Config.php" />
+    <File Path="Dashboard.php" />
+    <File Path="Index.php" />
+    <File Path="Logout.php" />
+  </Folder>
+  <Folder Name="/Docs/Examples/react/">
+    <File Path="App.jsx" />
+    <File Path="AuthContext.jsx" />
+    <File Path="Callback.jsx" />
+    <File Path="Dashboard.jsx" />
+    <File Path="Login.jsx" />
+    <File Path="ProtectedRoute.jsx" />
+  </Folder>
   <Project Path="Data/Data.csproj" />
   <Project Path="Gateway/Gateway.csproj" />
   <Project Path="MockClient/MockClient.csproj" />
