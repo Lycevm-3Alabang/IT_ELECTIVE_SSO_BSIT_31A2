@@ -1,4 +1,5 @@
 ﻿using Gateway.Areas.Admin.Models;
+using Gateway.Services;
 using ITELECTIVE_SSO.Data;
 using ITElectiveSSO.Models;
 using Microsoft.AspNetCore.Identity;
@@ -13,12 +14,19 @@ namespace Gateway.Areas.Admin.Controllers
     {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly SsoDbContext _context;
+        private readonly IAuditService _auditService;
 
-        public UserGroupsController(UserManager<ApplicationUser> userManager, SsoDbContext context)
+        public UserGroupsController(
+            UserManager<ApplicationUser> userManager,
+            SsoDbContext context,
+            IAuditService auditService)
         {
             _userManager = userManager;
             _context = context;
+            _auditService = auditService;
         }
+
+        private string? GetClientIp() => HttpContext?.Connection?.RemoteIpAddress?.ToString();
 
         [HttpGet("Available")]
         public async Task<IActionResult> Available(string userId)
@@ -70,18 +78,18 @@ namespace Gateway.Areas.Admin.Controllers
         // POST /Admin/Users/{userId}/Groups
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Assign(string userId, AssignGroupViewModel model)
+        public async Task<IActionResult> Assign(string userId, [FromBody] AssignGroupViewModel model)
         {
             var user = await _userManager.FindByIdAsync(userId);
             if (user == null)
             {
-                return NotFound();
+                return NotFound(new { message = "User not found." });
             }
 
             var group = await _context.Groups.FindAsync(model.GroupId);
             if (group == null)
             {
-                return NotFound();
+                return NotFound(new { message = "Group not found." });
             }
 
             var alreadyAssigned = await _context.UserGroups
@@ -89,8 +97,7 @@ namespace Gateway.Areas.Admin.Controllers
 
             if (alreadyAssigned)
             {
-                TempData["ErrorMessage"] = "User is already assigned to this group.";
-                return RedirectToAction("Details", "Users", new { id = userId });
+                return Conflict(new { message = "User is already assigned to this group." });
             }
 
             _context.UserGroups.Add(new UserGroup
@@ -101,8 +108,13 @@ namespace Gateway.Areas.Admin.Controllers
 
             await _context.SaveChangesAsync();
 
-            TempData["SuccessMessage"] = $"User assigned to group '{group.Name}'.";
-            return RedirectToAction("Details", "Users", new { id = userId });
+            await _auditService.LogActionAsync(
+                userId,
+                "GroupAssigned",
+                $"User '{user.Email}' was assigned to group '{group.Name}' by an administrator.",
+                GetClientIp());
+
+            return Ok(new { success = true, message = $"User assigned to group '{group.Name}'." });
         }
 
         [HttpDelete("{groupId}")]
@@ -117,8 +129,17 @@ namespace Gateway.Areas.Admin.Controllers
                 return NotFound();
             }
 
+            var user = await _userManager.FindByIdAsync(userId);
+            var group = await _context.Groups.FindAsync(groupId);
+
             _context.UserGroups.Remove(userGroup);
             await _context.SaveChangesAsync();
+
+            await _auditService.LogActionAsync(
+                userId,
+                "GroupUnassigned",
+                $"User '{user?.Email ?? userId}' was removed from group '{group?.Name ?? groupId.ToString()}' by an administrator.",
+                GetClientIp());
 
             return Ok(new { success = true });
         }

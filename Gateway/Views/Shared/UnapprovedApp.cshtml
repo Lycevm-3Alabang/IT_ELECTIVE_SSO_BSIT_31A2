@@ -1,9 +1,75 @@
 ﻿@{
     ViewData["Title"] = "Unapproved External App";
+    Layout = null;  
 }
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex" />
+    <title>@ViewData["Title"] - IT ELECTIVE - SSO</title>
+    <style>
+            :root {
+                --sso-navy: #0f1b33;
+                --sso-blue: #1e88d8;
+                --sso-error: #c0392b;
+                --sso-error-bg: #fdecea;
+            }
+            * { box-sizing: border-box; }
+            body {
+                margin: 0;
+                min-height: 100vh;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 2rem 1rem;
+                font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+                background-color: #0b1329;
+                color: #e2e8f0;
+            }
+            .sso-card {
+                width: 100%;
+                max-width: 460px;
+                background: var(--sso-navy);
+                border-radius: 10px;
+                padding: 2rem;
+                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            }
+            .sso-title { margin: 0 0 1.25rem; font-size: 1.6rem; font-weight: 800; color: #fff; letter-spacing: .02em; }
+            .sso-title-dash { color: var(--sso-blue); }
+            .sso-alert {
+                display: flex;
+                align-items: flex-start;
+                gap: .6rem;
+                background: var(--sso-error-bg);
+                color: var(--sso-error);
+                border: 1px solid var(--sso-error);
+                border-radius: 6px;
+                padding: .75rem .9rem;
+                margin-bottom: 1.25rem;
+                font-size: .95rem;
+            }
+            .sso-alert-icon { width: 18px; height: 18px; flex-shrink: 0; margin-top: 2px; }
+            .sso-help { margin: 0; font-size: .9rem; line-height: 1.5; color: #cbd5e1; }
+    </style>
+</head>
+<body>
+    <main class="sso-card">
+        <h1 class="sso-title">IT ELECTIVE <span class="sso-title-dash">-</span> SSO</h1>
 
-<div class="text-center" style="margin-top: 4rem;">
-    <h1 class="text-danger">Unapproved External App</h1>
-    <p>The application you're trying to access has not been registered with this SSO system, or the return URL doesn't match what's on file.</p>
-    <p>If you believe this is a mistake, please contact your administrator.</p>
-</div>
+        <div class="sso-alert" role="alert">
+            <svg class="sso-alert-icon" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9 6h2v5H9V6zm0 6h2v2H9v-2z" clip-rule="evenodd" />
+            </svg>
+            <div>
+                <strong>Unapproved External App</strong><br />
+                The application you're trying to access isn't registered with this SSO system,
+                or its return URL doesn't match what's on file. You have not been signed in.
+            </div>
+        </div>
+
+        <p class="sso-help">If you believe this is a mistake, please contact your administrator.</p>
+    </main>
+</body>
+</html>
