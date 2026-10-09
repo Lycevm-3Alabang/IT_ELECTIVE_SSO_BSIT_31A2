@@ -3,8 +3,9 @@
     var currentAction = ViewContext.RouteData.Values["action"]?.ToString() ?? "";
 }
 
+<!-- Mobile Top Navigation Header -->
 <div class="d-lg-none bg-dark text-white p-3 d-flex justify-content-between align-items-center shadow-sm">
-    <div class="d-flex align-items-center">
+    <div class="d-flex align-items-center text-white text-decoration-none">
         <img src="~/images/loalogo.png"
              alt="Logo"
              class="img-fluid rounded-circle me-2 object-fit-cover"
@@ -17,13 +18,15 @@
     </button>
 </div>
 
+<!-- Main Sidebar Container -->
 <div class="offcanvas-lg offcanvas-start text-white bg-dark sidebar flex-shrink-0 p-3 d-flex flex-column" tabindex="-1" id="adminSidebar" aria-labelledby="adminSidebarLabel" style="width: 260px;">
     <div class="offcanvas-header d-lg-none pb-2 border-bottom border-secondary">
         <h5 class="offcanvas-title fw-bold text-white" id="adminSidebarLabel">Menu</h5>
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" data-bs-target="#adminSidebar" aria-label="Close"></button>
     </div>
 
-    <a href="/" class="d-none d-lg-flex align-items-center mb-3 text-white text-decoration-none px-2 py-2">
+    <!-- Desktop Brand Logo Header (Non-clickable static title) -->
+    <div class="d-none d-lg-flex align-items-center mb-3 text-white px-2 py-2 user-select-none">
         <div class="me-3 d-flex align-items-center justify-content-center flex-shrink-0">
             <img src="~/images/loalogo.png"
                  alt="Logo"
@@ -32,9 +35,10 @@
                  onerror="this.onerror=null; this.src='https://via.placeholder.com/44/0d6efd/ffffff?text=LOGO';" />
         </div>
         <span class="fs-4 fw-bold tracking-wide">IT ELECTIVE - SSO</span>
-    </a>
+    </div>
     <hr class="my-3 opacity-25 d-none d-lg-block">
 
+    <!-- Sidebar Navigation Links -->
     <ul class="nav nav-pills flex-column mb-3 mt-3 mt-lg-0">
         <li class="nav-item mb-2">
             <a asp-area="" asp-controller="Admin" asp-action="Index"
